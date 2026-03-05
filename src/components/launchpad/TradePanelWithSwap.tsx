@@ -256,7 +256,7 @@ export function TradePanelWithSwap({ token, userBalance = 0 }: TradePanelWithSwa
         <div>
           <div className="flex justify-between items-center mb-1.5">
             <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-              {isBuy ? 'Amount to buy in SOL' : `Amount of ${token.ticker} to sell`}
+              {isBuy ? 'Amount to buy' : `Amount of ${token.ticker} to sell`}
             </span>
             <span className="text-[10px] font-mono text-muted-foreground">
               Bal: {isBuy
@@ -279,7 +279,8 @@ export function TradePanelWithSwap({ token, userBalance = 0 }: TradePanelWithSwa
               >
                 MAX
               </button>
-              <span className="text-xs font-mono font-bold text-muted-foreground">
+              <span className="text-xs font-mono font-bold text-muted-foreground flex items-center gap-1">
+                {isBuy && <img src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" alt="SOL" className="w-4 h-4 rounded-full" />}
                 {isBuy ? 'SOL' : token.ticker}
               </span>
             </div>
