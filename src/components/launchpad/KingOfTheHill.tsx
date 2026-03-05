@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { PumpBadge } from "@/components/clawbook/PumpBadge";
 import { BagsBadge } from "@/components/clawbook/BagsBadge";
 import { useEffect, useState } from "react";
+import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { OptimizedTokenImage } from "@/components/ui/OptimizedTokenImage";
 import { copyToClipboard } from "@/lib/clipboard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -382,6 +383,7 @@ function KingCardSkeleton() {
 /* ── export ── */
 export function KingOfTheHill() {
   const { tokens, isLoading } = useKingOfTheHill();
+  const { onlineCount } = useVisitorTracking();
 
   return (
     <div className="w-full">
@@ -399,12 +401,12 @@ export function KingOfTheHill() {
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/15">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] font-mono font-medium text-emerald-400/80">45 online</span>
+            <span className="text-[10px] font-mono font-medium text-emerald-400/80">{onlineCount ?? '—'} online</span>
           </div>
-          <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-primary/80 border border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all">
+          <Link to="/agents/leaderboard" className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-semibold text-primary/80 border border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all">
             View Full Leaderboard
             <ArrowUpRight className="w-3 h-3" />
-          </button>
+          </Link>
         </div>
       </div>
 
