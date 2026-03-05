@@ -319,6 +319,12 @@ export default function FunTokenDetailPage() {
     !isLoading && !token
   );
 
+  // Also fetch Codex data for internal tokens — gives accurate price, holders, mcap
+  const { data: codexEnrichment } = useExternalToken(
+    mintAddress || '',
+    !!token && !!mintAddress
+  );
+
   const { data: livePoolState, refetch: refetchPoolState } = usePoolState({
     mintAddress: token?.mint_address || '',
     enabled: !!token?.mint_address && token?.status === 'active',
@@ -460,11 +466,22 @@ export default function FunTokenDetailPage() {
     profiles: null,
   };
 
+  const codexPrice = codexEnrichment?.priceUsd;
+  const codexHolders = codexEnrichment?.holders;
+  const codexMcap = codexEnrichment?.marketCapUsd;
+
+  const formatPriceUsd = (v: number) => {
+    if (v >= 1) return `$${v.toFixed(2)}`;
+    if (v >= 0.01) return `$${v.toFixed(4)}`;
+    if (v > 0) return `$${v.toFixed(8)}`;
+    return '$0';
+  };
+
   const stats = [
-    { label: 'MCAP', value: formatCompact(token.market_cap_sol || 0), accent: true },
-    { label: 'VOL 24H', value: `${formatSolAmount(token.volume_24h_sol || 0)} SOL` },
-    { label: 'HOLDERS', value: (token.holder_count || 0).toLocaleString() },
-    { label: 'PRICE', value: `${(token.price_sol || 0).toExponential(2)} SOL` },
+    { label: 'MCAP', value: codexMcap && codexMcap > 0 ? `$${codexMcap >= 1000 ? `${(codexMcap / 1000).toFixed(1)}K` : codexMcap.toFixed(0)}` : formatCompact(token.market_cap_sol || 0), accent: true },
+    { label: 'VOL 24H', value: codexEnrichment?.volume24hUsd && codexEnrichment.volume24hUsd > 0 ? `$${codexEnrichment.volume24hUsd >= 1000 ? `${(codexEnrichment.volume24hUsd / 1000).toFixed(1)}K` : codexEnrichment.volume24hUsd.toFixed(0)}` : `${formatSolAmount(token.volume_24h_sol || 0)} SOL` },
+    { label: 'HOLDERS', value: (codexHolders ?? token.holder_count ?? 0).toLocaleString() },
+    { label: 'PRICE', value: codexPrice && codexPrice > 0 ? formatPriceUsd(codexPrice) : `${(token.price_sol || 0).toFixed(8)} SOL` },
     { label: 'SUPPLY', value: formatTokenAmount(TOTAL_SUPPLY) },
   ];
 
@@ -505,10 +522,10 @@ export default function FunTokenDetailPage() {
       </h3>
       <div className="space-y-0">
         {[
-          { label: 'Price', value: `${(token.price_sol || 0).toFixed(8)} SOL` },
-          { label: 'Market Cap', value: formatUsd(token.market_cap_sol || 0) },
-          { label: 'Volume 24h', value: `${formatSolAmount(token.volume_24h_sol || 0)} SOL` },
-          { label: 'Holders', value: (token.holder_count || 0).toLocaleString() },
+          { label: 'Price', value: codexPrice && codexPrice > 0 ? formatPriceUsd(codexPrice) : `${(token.price_sol || 0).toFixed(8)} SOL` },
+          { label: 'Market Cap', value: codexMcap && codexMcap > 0 ? `$${codexMcap >= 1000 ? `${(codexMcap / 1000).toFixed(1)}K` : codexMcap.toFixed(0)}` : formatUsd(token.market_cap_sol || 0) },
+          { label: 'Volume 24h', value: codexEnrichment?.volume24hUsd && codexEnrichment.volume24hUsd > 0 ? `$${codexEnrichment.volume24hUsd.toFixed(0)}` : `${formatSolAmount(token.volume_24h_sol || 0)} SOL` },
+          { label: 'Holders', value: (codexHolders ?? token.holder_count ?? 0).toLocaleString() },
           { label: 'Supply', value: formatTokenAmount(TOTAL_SUPPLY) },
         ].map((row, i) => (
           <div key={i} className="flex justify-between text-xs md:text-[11px] lg:text-[10px] font-mono py-2 md:py-1.5 lg:py-1 border-b border-border/10 last:border-0">
@@ -791,7 +808,7 @@ export default function FunTokenDetailPage() {
             {mobileTab === 'chart' && (
               <>
                 <ChartSection chartHeight={340} />
-                <TokenDataTabs tokenAddress={token.mint_address || mintAddress || ''} holderCount={token.holder_count || 0} />
+                <TokenDataTabs tokenAddress={token.mint_address || mintAddress || ''} holderCount={codexHolders ?? token.holder_count ?? 0} userWallet={solanaAddress || undefined} />
               </>
             )}
             {mobileTab === 'comments' && (
@@ -808,7 +825,7 @@ export default function FunTokenDetailPage() {
           <div className="hidden md:grid lg:hidden grid-cols-12 gap-2">
             <div className={`${isPunchToken ? 'col-span-12' : 'col-span-7'} flex flex-col gap-2`}>
               <ChartSection chartHeight={420} />
-              <TokenDataTabs tokenAddress={token.mint_address || mintAddress || ''} holderCount={token.holder_count || 0} />
+              <TokenDataTabs tokenAddress={token.mint_address || mintAddress || ''} holderCount={codexHolders ?? token.holder_count ?? 0} userWallet={solanaAddress || undefined} />
               {isPunchToken && (
                 <div className="terminal-panel-flush rounded-lg px-4 py-3 flex items-center gap-2">
                   <Lock className="h-3.5 w-3.5 text-muted-foreground" />
@@ -835,7 +852,7 @@ export default function FunTokenDetailPage() {
             {/* Left: Chart + DataTabs */}
             <div className="col-span-9 flex flex-col gap-1.5">
               <ChartSection chartHeight={380} />
-              <TokenDataTabs tokenAddress={token.mint_address || mintAddress || ''} holderCount={token.holder_count || 0} />
+              <TokenDataTabs tokenAddress={token.mint_address || mintAddress || ''} holderCount={codexHolders ?? token.holder_count ?? 0} userWallet={solanaAddress || undefined} />
             </div>
             {/* Right: Trade + Info + Comments + Wallet */}
             <div className="col-span-3 flex flex-col gap-1.5">
