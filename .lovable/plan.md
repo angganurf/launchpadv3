@@ -1,65 +1,63 @@
 
 
-## Problems Identified
+## Issues to Fix
 
-### 1. "No Route Found" Bug
-In `UniversalTradePanel.tsx` line 41: `const useJupiterRoute = token.graduated !== false;`  
-When Jupiter fails to find a quote (returns null), the button shows "No route found" and is **disabled** — user cannot trade at all. There is no fallback to PumpPortal.
+### 1. "ALL TRADES" Tab Styling (Reference Image Match)
+The current `CodexTokenTrades.tsx` uses a compact 11px table with tiny headers. The reference shows:
+- **Tab bar**: "ALL TRADES" (chartreuse underline), "YOUR TRADES", "HOLDERS" — bold uppercase, more spacing
+- **Table rows**: Each row has a **round avatar** + display name in the first column, a colored **BUY/SELL badge** (green bg for BUY, red bg for SELL with a small square icon prefix), Size column showing `≡ 0.842/$3.5`, Price column (`$3.5`), Time column (`1 m`, `32 m`, `2 h`), Transaction column (truncated hash as underlined link)
+- Row height is generous (~56px), not the current cramped 11px rows
+- No separate "Age" column — time is its own column labeled "Time"
+- "Maker" column replaced with "Holders (count)" showing avatar + display name
 
-**Fix**: When Jupiter quote fails, allow the trade anyway via PumpPortal fallback. Remove the hard gate that requires a quote before enabling the button.
+### 2. Tab Bar Renaming
+Current tabs: "Trades", "Holders", "Top Traders"
+Reference: "ALL TRADES", "YOUR TRADES", "HOLDERS"
+- Rename and restyle to match, using the same chartreuse underline pattern from the trade panel
 
-### 2. Jito Infrastructure Exists but Is Never Used
-`src/lib/jitoBundle.ts` has full Jito bundle submission code but **zero imports** anywhere in the project. All swaps currently go through Privy's standard `signAndSendTransaction` which uses the regular Helius RPC — no Jito fast-lane.
+### 3. Holders Tab — Same Row Style
+The holders tab should show the same avatar + name row format (not just a count number). Use the holder addresses from Helius, display as avatar + truncated address rows.
 
-### 3. Privy Popup Already Suppressed
-`useSolanaWalletPrivy.ts` already sets `showWalletUIs: false` — confirmed working.
+### 4. Price Display Bug: "PRICE2.25e-8 SOL"  
+In `FunTokenDetailPage.tsx` line 467, `stats` array uses `toExponential(2)` for price which shows `2.25e-8`. The label "PRICE" and value concatenate visually. Fix: format price properly using USD from Codex data instead of raw SOL exponential notation.
+
+### 5. Holders Count Wrong
+Line 466: `(token.holder_count || 0)` uses stale DB data. Need to fetch live holder count from Codex (`codex-token-info` returns `holders` field) or from the Helius holder endpoint. For internal tokens, also enrich with Codex data.
 
 ---
 
-## Plan for Axiom-Like Speed
+## Plan
 
-### Architecture: Jito `sendTransaction` Endpoint (not bundles)
+### File: `src/components/launchpad/TokenDataTabs.tsx`
+- Rename tabs: "ALL TRADES", "YOUR TRADES", "HOLDERS"
+- Style tab bar with chartreuse `#c8ff00` underline for active tab, uppercase `text-[11px] tracking-wider`
+- Pass `holderCount` from Codex data (not DB)
 
-Axiom and other fast trading bots use **Jito's `sendTransaction` endpoint** (`https://mainnet.block-engine.jito.wtf/api/v1/transactions`), which:
-- Acts as a proxy to Solana's sendTransaction RPC
-- Routes directly to Jito validators for faster block inclusion
-- Supports priority fees for landing priority
-- Does NOT require bundling or tips (tips optional for priority)
+### File: `src/components/launchpad/CodexTokenTrades.tsx` — Full Restyle
+- Change table layout to match reference exactly:
+  - Column 1: "Holders (N)" — avatar (32px round, placeholder gradient) + maker display name or truncated address
+  - Column 2: "Type" — BUY/SELL badge with small square dot prefix, green/red background pill
+  - Column 3: "Size" — `≡ {tokenAmt}/{$USD}` format
+  - Column 4: "Price" — `${USD}` 
+  - Column 5: "Time" — relative time (`1 m`, `32 m`, `2 h`, `1 d`)
+  - Column 6: "Transaction" — truncated tx hash as underlined link (`B661D6...5D4F`)
+- Row height ~56px with proper padding
+- Remove the Copy button from maker column
+- Header row: muted uppercase labels matching reference
 
-This is simpler and faster than full bundle submission for single-transaction swaps.
+### File: `src/components/launchpad/TokenDataTabs.tsx` — Holders Tab
+- Instead of showing just a big count number, render a table of holder addresses using the same row style (avatar + truncated address)
+- Use data from `useTokenHolders` which returns `holders: string[]`
 
-### Files to Modify
+### File: `src/pages/FunTokenDetailPage.tsx` — Fix Price & Holders Data
+- For internal tokens: also fetch Codex data via `useExternalToken` to get accurate `priceUsd`, `holders`, `marketCapUsd`
+- Fix `stats` array line 463-469:
+  - PRICE: use Codex `priceUsd` formatted as USD (not exponential SOL)
+  - HOLDERS: use Codex `holders` count (not stale DB `holder_count`)
+  - MCAP: use Codex `marketCapUsd` formatted as USD
+- Pass accurate holder count to `TokenDataTabs`
 
-#### 1. `src/hooks/useSolanaWalletPrivy.ts` — Add Jito Fast Send
-- After Privy signs + sends via standard RPC, **also** submit the same signed transaction to Jito's `sendTransaction` endpoint as a parallel "fast lane"
-- Alternatively: since Privy's `signAndSendTransaction` both signs AND sends, we can't separate them. Instead, after getting the signature back, we fire-and-forget the same serialized tx to Jito endpoints for redundancy
-- **Better approach**: Create a new `signAndSendTransactionFast` method that:
-  1. Uses Privy to sign + send (standard path, returns signature)
-  2. Simultaneously submits to Jito `sendTransaction` endpoint for faster landing
-  3. Both paths race — whichever confirms first wins
-
-#### 2. `src/components/launchpad/UniversalTradePanel.tsx` — Fix "No Route Found"
-- When Jupiter quote fails, fall back to PumpPortal instead of disabling the button
-- Change routing logic: try Jupiter first, if quote is null, switch `useJupiterRoute` to false dynamically
-- Remove the disabled condition that requires `quote` when `useJupiterRoute` is true
-- In `handleTrade`: if Jupiter route was intended but no quote exists, use PumpPortal as fallback
-
-#### 3. `src/hooks/useJupiterSwap.ts` — Add Jito Submission
-- In `executeSwap`, after deserializing the Jupiter swap transaction:
-  - Sign via Privy (existing flow)
-  - Also submit to Jito's `sendTransaction` endpoint in parallel for faster landing
-
-#### 4. `src/lib/jitoBundle.ts` — Add `sendTransactionViaJito` Helper
-- Add a lightweight function (separate from bundles) that submits a single signed transaction to Jito's `/api/v1/transactions` endpoint
-- Multiple region failover (existing endpoint list)
-- This is what Axiom uses for fast execution
-
-#### 5. `src/hooks/useRealSwap.ts` — Integrate Jito Fast Send
-- After Privy signs the Meteora DBC swap tx, also submit via Jito for faster landing
-
-### Summary of Speed Improvements
-- **Dual-submit**: Every signed transaction goes to both standard RPC (via Privy) AND Jito's fast endpoint simultaneously
-- **Priority fees**: Already in Jupiter swap params (`prioritizationFeeLamports: 'auto'`), keep as-is
-- **No popup**: Already implemented via `showWalletUIs: false`
-- **Route fallback**: Jupiter → PumpPortal fallback eliminates "No route found" dead ends
+### File: `src/components/launchpad/TokenDataTabs.tsx` — "YOUR TRADES" Tab
+- Filter trades by connected wallet address (pass `userWallet` prop)
+- Show same table format but filtered to user's trades only
 
