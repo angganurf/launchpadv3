@@ -367,7 +367,7 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
               ) : useJupiterRoute && !jupiterQuoteFailed && quoteLoading ? (
                 'Getting quote...'
               ) : isBuy ? (
-                `QUICK BUY ◎ ${numericAmount || ''}`
+                <span className="flex items-center gap-1">QUICK BUY <img src="https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png" alt="" className="w-4 h-4 rounded-full" /> {numericAmount || ''}</span>
               ) : (
                 `SELL ${token.ticker}`
               )}
