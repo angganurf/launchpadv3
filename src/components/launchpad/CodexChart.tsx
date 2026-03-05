@@ -6,9 +6,10 @@ import {
   CandlestickSeries,
   HistogramSeries,
   type IChartApi,
+  type ISeriesApi,
   type UTCTimestamp,
 } from "lightweight-charts";
-import { useCodexChart } from "@/hooks/useCodexChart";
+import { useCodexChart, type CodexBar } from "@/hooks/useCodexChart";
 import { CodexChartToolbar } from "./CodexChartToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -25,6 +26,9 @@ export function CodexChart({
 }: CodexChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+  const priceLineRef = useRef<any>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const {
@@ -55,24 +59,21 @@ export function CodexChart({
     return () => document.removeEventListener("fullscreenchange", h);
   }, []);
 
-  // ========== CHART ==========
+  // ========== CHART CREATION (no bars dependency) ==========
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || bars.length === 0) return;
+    if (!container) return;
 
     if (chartRef.current) {
       chartRef.current.remove();
       chartRef.current = null;
+      candleSeriesRef.current = null;
+      volumeSeriesRef.current = null;
+      priceLineRef.current = null;
     }
 
     const chartH = isFullscreen ? window.innerHeight - 40 : height;
-    const volMargin = showVolume ? 0.32 : 0.08;
-    const isSparseData = bars.length < 25;
-    const rightOffset = isSparseData ? 1.5 : 12;
-    const barSpacing = isSparseData ? 28 : 12;
-    const minBarSpacing = isSparseData ? 10 : 4;
 
-    // ── CREATE CHART ──
     const chart = createChart(container, {
       width: container.clientWidth,
       height: chartH,
@@ -106,9 +107,9 @@ export function CodexChart({
         timeVisible: true,
         secondsVisible: resolution.includes("S"),
         borderColor: "#222",
-        rightOffset,
-        barSpacing,
-        minBarSpacing,
+        rightOffset: 8,
+        barSpacing: 6,
+        minBarSpacing: 2,
         fixLeftEdge: false,
         fixRightEdge: false,
       },
@@ -124,22 +125,7 @@ export function CodexChart({
 
     chartRef.current = chart;
 
-    // ── Custom formatters ──
-    const priceFormatter = (price: number): string => {
-      if (price === 0) return '0';
-      if (price < 0.000001) return price.toExponential(4);
-      if (price < 0.01) return price.toFixed(10).replace(/0+$/, '').replace(/\.$/, '');
-      return price.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
-    };
-
-    const volumeFormatter = (value: number): string => {
-      if (value <= 0) return '0';
-      if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';
-      if (value >= 1_000) return (value / 1_000).toFixed(1) + 'K';
-      return Math.floor(value).toString();
-    };
-
-    // ── CANDLE SERIES on right scale ──
+    // ── CANDLE SERIES ──
     const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: "#22C55E",
       downColor: "#EF4444",
@@ -151,12 +137,14 @@ export function CodexChart({
       priceFormat: { type: "price", precision: 12, minMove: 0.000000000001 },
       priceScaleId: "right",
     });
+    candleSeriesRef.current = candleSeries;
 
-    // ── VOLUME SERIES on separate "volume" scale ──
+    // ── VOLUME SERIES ──
     const volumeSeries = chart.addSeries(HistogramSeries, {
       priceFormat: { type: "volume" },
       priceScaleId: "volume",
     });
+    volumeSeriesRef.current = volumeSeries;
 
     chart.priceScale("volume").applyOptions({
       scaleMargins: { top: 0.68, bottom: 0 },
@@ -165,7 +153,41 @@ export function CodexChart({
       entireTextOnly: true,
     });
 
-    // ── BUILD DATA ──
+    // Hide TradingView watermark
+    const wm = container.querySelector('a[href*="tradingview"]');
+    if (wm) (wm as HTMLElement).style.display = "none";
+
+    // Resize handler
+    const onResize = () => {
+      if (containerRef.current && chartRef.current) {
+        chartRef.current.applyOptions({
+          width: containerRef.current.clientWidth,
+          height: isFullscreen ? window.innerHeight - 40 : height,
+        });
+      }
+    };
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      if (chartRef.current) {
+        chartRef.current.remove();
+        chartRef.current = null;
+        candleSeriesRef.current = null;
+        volumeSeriesRef.current = null;
+        priceLineRef.current = null;
+      }
+    };
+  }, [height, isFullscreen, showVolume, resolution]);
+
+  // ========== DATA UPDATE (smooth, no chart recreation) ==========
+  useEffect(() => {
+    const chart = chartRef.current;
+    const candleSeries = candleSeriesRef.current;
+    const volumeSeries = volumeSeriesRef.current;
+    if (!chart || !candleSeries || !volumeSeries || bars.length === 0) return;
+
+    // Build data arrays
     const chartData: Array<{ time: UTCTimestamp; open: number; high: number; low: number; close: number }> = [];
     const volumeData: Array<{ time: UTCTimestamp; value: number; color: string }> = [];
 
@@ -187,19 +209,22 @@ export function CodexChart({
       });
     }
 
-    // ── SET DATA ──
+    // Update data in-place (no flicker)
     candleSeries.setData(chartData);
     if (showVolume) {
       volumeSeries.setData(volumeData);
+    } else {
+      volumeSeries.setData([]);
     }
 
-    // ── FIT & ZOOM ──
-    chart.timeScale().fitContent();
-
-    // Last price line
+    // Remove old price line and add new one
+    if (priceLineRef.current) {
+      try { candleSeries.removePriceLine(priceLineRef.current); } catch {}
+      priceLineRef.current = null;
+    }
     const last = bars[bars.length - 1];
     if (last) {
-      candleSeries.createPriceLine({
+      priceLineRef.current = candleSeries.createPriceLine({
         price: last.close,
         color: last.close >= last.open ? "#22C55E" : "#EF4444",
         lineWidth: 1,
@@ -208,43 +233,21 @@ export function CodexChart({
       });
     }
 
-    // Keep latest bars visually anchored on the right for sparse datasets
-    const paddingTimeout = window.setTimeout(() => {
-      if (isSparseData) {
-        chart.timeScale().setVisibleLogicalRange({
-          from: -0.5,
-          to: bars.length + 1.5,
-        });
-        return;
-      }
-
-      chart.timeScale().scrollToPosition(3, false);
-    }, 80);
-
-    // Hide TradingView watermark
-    const wm = container.querySelector('a[href*="tradingview"]');
-    if (wm) (wm as HTMLElement).style.display = "none";
-
-    // Resize handler
-    const onResize = () => {
-      if (containerRef.current && chartRef.current) {
-        chartRef.current.applyOptions({
-          width: containerRef.current.clientWidth,
-          height: isFullscreen ? window.innerHeight - 40 : height,
-        });
-      }
-    };
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      window.clearTimeout(paddingTimeout);
-      window.removeEventListener("resize", onResize);
-      if (chartRef.current) {
-        chartRef.current.remove();
-        chartRef.current = null;
-      }
-    };
-  }, [bars, height, isFullscreen, showVolume, resolution]);
+    // Position: anchor latest candles to right
+    const isSparseData = bars.length < 25;
+    if (isSparseData) {
+      // Adjust bar spacing for sparse data
+      chart.timeScale().applyOptions({ barSpacing: 14, minBarSpacing: 4 });
+      chart.timeScale().setVisibleLogicalRange({
+        from: -2,
+        to: bars.length + 3,
+      });
+    } else {
+      chart.timeScale().applyOptions({ barSpacing: 6, minBarSpacing: 2 });
+      // Scroll so latest candle is near the right edge
+      chart.timeScale().scrollToPosition(5, false);
+    }
+  }, [bars, showVolume]);
 
   // ── Toolbar props ──
   const tp = {
