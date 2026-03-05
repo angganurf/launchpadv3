@@ -1,31 +1,28 @@
 
 
-## Fix: PnL Data Missing for Most Holders
+## Add "% Holdings" Column to Holders Table and All Trades Table
 
-### Root Cause
+The reference image shows the "Remaining" column displaying a **USD value** (e.g. `$2.55K`) alongside a **percentage badge** (e.g. `99.43%`) with a progress bar underneath. Currently the Holders table shows token amount instead of USD value, and the All Trades table has no holdings column at all.
 
-Two bugs causing PnL to show for only a few "random" holders:
+### Changes
 
-1. **Only 50 trades fetched** — `useCodexTokenEvents` fetches a single page of 50 trades. A token with 548 holders has thousands of trades. Most holders simply don't appear in the latest 50. This is the primary cause.
+#### 1. Update `HoldersTable.tsx` — Remaining column
+- Replace the token amount display with the **USD value** of remaining holdings: `holder.tokenAmount * currentPriceUsd`, formatted with `formatUsdCompact`
+- Show the percentage in a pill/badge style (dark background, rounded) matching the reference image
+- Keep the progress bar underneath
 
-2. **Case-sensitive address corruption** — `buildHolderStatsMap` uses `.toLowerCase()` on Solana base58 addresses. Base58 is case-sensitive (`A` ≠ `a`), so lowercasing corrupts the addresses and causes random match/miss depending on whether the address happens to be all-lowercase already.
+#### 2. Update `CodexTokenTrades.tsx` — Add "% Holdings" column
+- The trades table currently has no holdings data. We need to accept `totalSupply` and `currentPriceUsd` as new props, plus a way to know each maker's current token balance
+- Pass `holdersData` from `TokenDataTabs` into `CodexTokenTrades` so we can look up each trader's current holding percentage
+- Add a new column after "Size" showing the trader's current `$value` and `%` of supply (looked up from holders data)
+- If the trader isn't in the top holders list, show `—`
 
-### Plan
+#### 3. Update `TokenDataTabs.tsx`
+- Always fetch holders data (not just on holders tab) so it's available for trades view
+- Pass holders array and `currentPriceUsd` to `CodexTokenTrades`
 
-#### 1. New hook: `src/hooks/useAllTokenTrades.ts`
-- Create a dedicated hook that **paginates through ALL Codex trade events** (not just 50)
-- Loop: fetch page → collect events → use cursor → repeat until cursor is null or max 2000 events
-- Only enabled when holders tab is active (to avoid unnecessary API calls)
-- `staleTime: 30_000`, no auto-refetch polling (heavy query)
-
-#### 2. Update edge function `codex-token-events` 
-- No changes needed — it already supports `cursor` param and up to `limit: 100`
-
-#### 3. Fix `src/components/launchpad/HoldersTable.tsx`
-- **Remove all `.toLowerCase()` calls** from `buildHolderStatsMap` and the lookup comparisons — Solana addresses must be compared as-is (base58 is case-sensitive)
-
-#### 4. Update `src/components/launchpad/TokenDataTabs.tsx`
-- When holders tab is active, use the new `useAllTokenTrades` hook instead of the regular 50-event `data?.events`
-- Pass the full paginated trade list to `HoldersTable`
-- Show a loading indicator while paginating through all trades
+### Visual Style (matching reference)
+- USD value in white/foreground, e.g. `$2.55K`
+- Percentage in a subtle dark pill badge: `99.43%`
+- Thin progress bar underneath (blue/green for normal, red for >10%)
 
