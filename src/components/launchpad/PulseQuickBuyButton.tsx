@@ -264,15 +264,15 @@ export const PulseQuickBuyButton = memo(function PulseQuickBuyButton({
     <>
       <NotLoggedInModal open={showLoginModal} onOpenChange={setShowLoginModal} />
 
-      {/* Sell 100% button — only visible when user holds tokens */}
-      {hasBalance && (
+      {hasBalance ? (
+        /* Sell 100% — replaces Buy when user holds tokens */
         <button
           type="button"
           onClick={handleSell100}
           disabled={isBusy}
           className={isCompact
-            ? "discover-quick-buy-btn bg-red-500/15 text-red-400 hover:bg-red-500/25 border-red-500/20"
-            : "pulse-sol-btn bg-red-500/15 text-red-400 hover:bg-red-500/25 border-red-500/20"
+            ? "discover-quick-buy-btn bg-red-500/15 text-red-400 hover:bg-red-500/25 border-red-500/20 hover:border-red-500/40"
+            : "pulse-sol-btn bg-red-500/15 text-red-400 hover:bg-red-500/25 border-red-500/20 hover:border-red-500/40"
           }
         >
           {isSelling ? (
@@ -282,53 +282,53 @@ export const PulseQuickBuyButton = memo(function PulseQuickBuyButton({
           )}
           <span>{isSelling ? "Selling..." : "Sell 100%"}</span>
         </button>
-      )}
-
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button
-            type="button"
-            onClick={handleTriggerClick}
-            className={isCompact ? "discover-quick-buy-btn" : "pulse-sol-btn"}
-            disabled={isBusy}
+      ) : (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              onClick={handleTriggerClick}
+              className={isCompact ? "discover-quick-buy-btn" : "pulse-sol-btn"}
+              disabled={isBusy}
+            >
+              {(isLoading || buyingAmount !== null) ? (
+                <Loader2 className={isCompact ? "h-3 w-3 animate-spin" : "h-2.5 w-2.5 animate-spin"} />
+              ) : (
+                <Zap className={isCompact ? "h-3 w-3" : "h-2.5 w-2.5"} />
+              )}
+              <span>{(isLoading || buyingAmount !== null) ? "Buying..." : quickBuyAmount ? `${quickBuyAmount} SOL` : "Buy"}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-auto p-2 bg-card border-border"
+            side="top"
+            align="end"
+            sideOffset={6}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
-            {(isLoading || buyingAmount !== null) ? (
-              <Loader2 className={isCompact ? "h-3 w-3 animate-spin" : "h-2.5 w-2.5 animate-spin"} />
-            ) : (
-              <Zap className={isCompact ? "h-3 w-3" : "h-2.5 w-2.5"} />
-            )}
-            <span>{(isLoading || buyingAmount !== null) ? "Buying..." : quickBuyAmount ? `${quickBuyAmount} SOL` : "Buy"}</span>
-          </button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-auto p-2 bg-card border-border"
-          side="top"
-          align="end"
-          sideOffset={6}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <div className="flex items-center gap-1.5">
-            {PRESET_AMOUNTS.map((amt) => (
-              <button
-                key={amt}
-                type="button"
-                disabled={isBusy}
-                onClick={(e) => handleBuy(amt, e)}
-                className="px-3 py-1.5 rounded-md text-[11px] font-mono font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
-              >
-                {buyingAmount === amt ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  `${amt} SOL`
-                )}
-              </button>
-            ))}
-          </div>
-        </PopoverContent>
-      </Popover>
+            <div className="flex items-center gap-1.5">
+              {PRESET_AMOUNTS.map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  disabled={isBusy}
+                  onClick={(e) => handleBuy(amt, e)}
+                  className="px-3 py-1.5 rounded-md text-[11px] font-mono font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+                >
+                  {buyingAmount === amt ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    `${amt} SOL`
+                  )}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
     </>
   );
 });
