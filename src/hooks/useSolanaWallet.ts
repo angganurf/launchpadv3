@@ -2,36 +2,38 @@ import { useCallback, useMemo } from "react";
 import { Connection } from "@solana/web3.js";
 import { useAuth } from "@/hooks/useAuth";
 
-// Get a working Solana RPC URL
-// Priority: VITE_HELIUS_RPC_URL > VITE_HELIUS_API_KEY > runtime config > PublicNode fallback
-
+// Get Solana RPC URL
+// Priority: runtime config > VITE_HELIUS_RPC_URL > VITE_HELIUS_API_KEY > localStorage cache > PublicNode fallback
 export const getRpcUrl = (): { url: string; source: string } => {
-  // Option 1: Direct RPC URL from Vite env
-  const explicitUrl = import.meta.env.VITE_HELIUS_RPC_URL;
-  if (explicitUrl && typeof explicitUrl === "string" && explicitUrl.startsWith("https://")) {
-    return { url: explicitUrl, source: "VITE_HELIUS_RPC_URL" };
-  }
+  const isValidHttpsUrl = (value?: string | null) =>
+    !!value && value.startsWith("https://") && !value.includes("${");
 
-  // Option 2: Build URL from API key
-  const apiKey = import.meta.env.VITE_HELIUS_API_KEY;
-  if (apiKey && typeof apiKey === "string" && apiKey.length > 10 && !apiKey.includes("$")) {
-    const url = `https://mainnet.helius-rpc.com/?api-key=${apiKey}`;
-    return { url, source: "VITE_HELIUS_API_KEY" };
-  }
-
-  // Option 3: localStorage first (persists across sessions)
+  // Option 1: Runtime config (freshest, server-driven)
   if (typeof window !== "undefined") {
-    const fromStorage = localStorage.getItem("heliusRpcUrl");
-    if (fromStorage && fromStorage.startsWith("https://") && !fromStorage.includes("${")) {
-      return { url: fromStorage, source: "localStorage_heliusRpcUrl" };
+    const fromWindow = (window as any)?.__PUBLIC_CONFIG__?.heliusRpcUrl as string | undefined;
+    if (isValidHttpsUrl(fromWindow)) {
+      return { url: fromWindow!.trim(), source: "runtime_public_config" };
     }
   }
 
-  // Option 4: Window runtime config
+  // Option 2: Direct RPC URL from Vite env
+  const explicitUrl = import.meta.env.VITE_HELIUS_RPC_URL;
+  if (isValidHttpsUrl(explicitUrl)) {
+    return { url: explicitUrl!.trim(), source: "VITE_HELIUS_RPC_URL" };
+  }
+
+  // Option 3: Build URL from API key
+  const apiKey = import.meta.env.VITE_HELIUS_API_KEY;
+  if (apiKey && typeof apiKey === "string" && apiKey.length > 10 && !apiKey.includes("$")) {
+    const url = `https://mainnet.helius-rpc.com/?api-key=${apiKey.trim()}`;
+    return { url, source: "VITE_HELIUS_API_KEY" };
+  }
+
+  // Option 4: localStorage cache (lowest priority to avoid stale keys overriding runtime config)
   if (typeof window !== "undefined") {
-    const fromWindow = (window as any)?.__PUBLIC_CONFIG__?.heliusRpcUrl as string | undefined;
-    if (fromWindow && fromWindow.startsWith("https://") && !fromWindow.includes("${")) {
-      return { url: fromWindow, source: "runtime_public_config" };
+    const fromStorage = localStorage.getItem("heliusRpcUrl");
+    if (isValidHttpsUrl(fromStorage)) {
+      return { url: fromStorage!.trim(), source: "localStorage_heliusRpcUrl" };
     }
   }
 
@@ -52,7 +54,7 @@ export function useSolanaWallet() {
 
   const isWalletReady = !!walletAddress;
 
-  const getConnection = useCallback(() => new Connection(rpcUrl, "confirmed"), [rpcUrl]);
+  const getConnection = useCallback(() => new Connection(rpcUrl, { commitment: "confirmed", disableRetryOnRateLimit: true }), [rpcUrl]);
 
   const getBalance = useCallback(async (): Promise<number> => {
     if (!walletAddress) return 0;

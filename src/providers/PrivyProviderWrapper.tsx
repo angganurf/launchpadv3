@@ -33,23 +33,21 @@ function isValidPrivyAppId(appId: string) {
 }
 
 function getHeliusRpcUrlFromRuntime(): string | null {
-  // 1) localStorage (set by RuntimeConfigBootstrap)
-  if (typeof window !== "undefined") {
-    const fromStorage = localStorage.getItem("heliusRpcUrl");
-    if (fromStorage && fromStorage.startsWith("https://") && !fromStorage.includes("${")) {
-      return fromStorage.trim();
-    }
+  const isValidHttpsUrl = (value?: string | null) =>
+    !!value && value.startsWith("https://") && !value.includes("${");
 
+  // 1) runtime config on window (freshest)
+  if (typeof window !== "undefined") {
     const fromWindow = (window as any)?.__PUBLIC_CONFIG__?.heliusRpcUrl as string | undefined;
-    if (fromWindow && fromWindow.startsWith("https://") && !fromWindow.includes("${")) {
-      return fromWindow.trim();
+    if (isValidHttpsUrl(fromWindow)) {
+      return fromWindow!.trim();
     }
   }
 
   // 2) build-time env
   const fromEnv = import.meta.env.VITE_HELIUS_RPC_URL;
-  if (fromEnv && typeof fromEnv === "string" && fromEnv.startsWith("https://") && !fromEnv.includes("${")) {
-    return fromEnv.trim();
+  if (isValidHttpsUrl(fromEnv)) {
+    return fromEnv!.trim();
   }
 
   // 3) api key -> construct paid Helius URL
@@ -58,7 +56,15 @@ function getHeliusRpcUrlFromRuntime(): string | null {
     return `https://mainnet.helius-rpc.com/?api-key=${apiKey.trim()}`;
   }
 
-  // 4) hardcoded fallback — should not normally be reached if env vars are set
+  // 4) localStorage cache (last to avoid stale keys)
+  if (typeof window !== "undefined") {
+    const fromStorage = localStorage.getItem("heliusRpcUrl");
+    if (isValidHttpsUrl(fromStorage)) {
+      return fromStorage!.trim();
+    }
+  }
+
+  // 5) fallback
   return "https://mainnet.helius-rpc.com/?api-key=placeholder-upgrade-helius";
 }
 

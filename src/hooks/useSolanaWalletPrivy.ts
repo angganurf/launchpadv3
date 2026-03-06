@@ -16,7 +16,7 @@ export function useSolanaWalletWithPrivy() {
   const rpcUrl = rpcData.url;
   const rpcSource = rpcData.source;
 
-  const getConnection = useCallback(() => new Connection(rpcUrl, "confirmed"), [rpcUrl]);
+  const getConnection = useCallback(() => new Connection(rpcUrl, { commitment: "confirmed", disableRetryOnRateLimit: true }), [rpcUrl]);
 
   const isPrivyEmbeddedWallet = useCallback((w: any) => {
     const walletClientType = w?.walletClientType;
