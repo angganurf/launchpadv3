@@ -1,31 +1,62 @@
 
 
-## Bug: Chart Not Rendering After Loading
+## Two Features: Trade Latency Indicator + Verification Popup
 
-### Root Cause
+### 1. Trade Latency Indicator
 
-The `CodexChart` component has a race condition between its loading state and chart initialization:
+Add a small latency badge to both trade panels that shows milliseconds from click to transaction submission after each trade.
 
-1. On mount, `bars=[]` and `isLoading=true` → component renders the **loading skeleton** (a different DOM tree, no `containerRef` div)
-2. The chart creation `useEffect` fires but `containerRef.current` is null (the container div isn't in the DOM during loading state)
-3. Data arrives: `bars=[53 items]`, `isLoading=false` → component switches to the **main chart div** with `ref={containerRef}`
-4. The data update `useEffect` fires, but `chartRef.current` is still null because the chart was never created
-5. The chart creation `useEffect` does NOT re-run because its dependencies `[height, isFullscreen, showVolume, resolution]` haven't changed
+**Changes:**
 
-The chart container only exists in the final return path (line 326-330), but during loading the component returns early with a skeleton (line 280-298). When data arrives and the real container mounts, no effect recreates the chart.
+**`src/hooks/useFastSwap.ts`** — Return the last latency value from state:
+- Add `lastLatencyMs` state (number | null)
+- Set it in `executeFastSwap` after `performance.now() - t0`
+- Return it from the hook
 
-### Fix
+**`src/components/launchpad/PulseQuickBuyButton.tsx`** — Show latency after trade:
+- Read `lastLatencyMs` from `useFastSwap()`
+- After a successful trade, show the latency in the success toast description: `"TX: abc123... · 642ms"`
 
-**File: `src/components/launchpad/CodexChart.tsx`**
+**`src/components/launchpad/UniversalTradePanel.tsx`** — Show latency indicator:
+- Add a small `lastLatencyMs` state, set it after `handleTrade` completes
+- Display a subtle monospace badge below the trade button: `"⚡ 642ms"` that fades after 5 seconds
+- Style: `text-[10px] font-mono text-primary/60`
 
-Change the component to always render the chart container div (even during loading/error/empty states), and overlay the loading/error/empty UI on top. This ensures `containerRef` is always mounted and the chart creation effect can find it.
+### 2. Verification Popup (Link Email + X Account)
 
-Alternatively (simpler): Add `bars.length` to the chart creation effect's dependency array so it re-runs when bars first arrive. Specifically, use a derived boolean like `hasBars = bars.length > 0` to avoid recreating the chart on every poll refresh.
+Create a modal that lets users link their email and X (Twitter) account via Privy, earning a verified badge on their profile. Styled like the reference screenshot — dark card, uppercase headers, olive/yellow CTA.
 
-The simpler approach:
-1. Add a `const hasBars = bars.length > 0` variable
-2. Add `hasBars` to the chart creation `useEffect` dependency array (line 189)
-3. This triggers chart creation exactly once when bars transition from empty to populated
+**New file: `src/components/launchpad/VerifyAccountModal.tsx`**
+- Dialog with header "ADD CELEBRITY LINKS" (or "VERIFY YOUR ACCOUNT")
+- Description text explaining the benefit (trust badge, verified status)
+- **Link X Account** button — calls `usePrivy().linkTwitter()`
+- **Link Email** button — calls `usePrivy().linkEmail()`
+- Shows current linked status (checkmark if already linked)
+- "I'M A CELEBRITY AND I WANT TO CONNECT MY TWITTER" bold text section
+- "ADD LINKS" CTA button (olive/yellow bg matching reference)
+- Terms text at bottom
+- On successful link, update `profiles.verified_type` to `'blue'` via a backend call
 
-This is the minimal fix — one line change to the dependency array plus one variable.
+**Database migration:**
+- Ensure `profiles.verified_type` column exists (it already does based on existing code)
+- No new tables needed
+
+**Integration points:**
+- Add a "Verify Account" button in `UserProfilePage.tsx` (when viewing own profile)
+- Add the modal trigger in the header dropdown / settings area
+- When X is linked, show the X verified badge (VerifiedBadge component) on the user's profile page using the existing `verified_type` field
+
+**`src/pages/UserProfilePage.tsx`** — Show VerifiedBadge properly:
+- Replace the generic `CheckCircle` icon with the existing `VerifiedBadge` component
+- Add "Verify Account" button when the logged-in user views their own profile
+
+### Files Summary
+
+| File | Action |
+|------|--------|
+| `src/hooks/useFastSwap.ts` | Edit — add `lastLatencyMs` state + return |
+| `src/components/launchpad/PulseQuickBuyButton.tsx` | Edit — show latency in success toast |
+| `src/components/launchpad/UniversalTradePanel.tsx` | Edit — show latency badge after trade |
+| `src/components/launchpad/VerifyAccountModal.tsx` | Create — email + X verification popup |
+| `src/pages/UserProfilePage.tsx` | Edit — add verify button + proper VerifiedBadge |
 
