@@ -447,7 +447,7 @@ export function KingOfTheHill() {
       {/* Premium Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <img src="/saturn-logo.png" alt="" className="w-5 h-5 object-contain" />
+          <img src="/saturn-logo.png" alt="Saturn" className="w-9 h-9 object-contain drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" />
           <div>
             <h2 className="text-base font-black uppercase tracking-[0.08em] text-foreground" style={{ textShadow: "0 0 20px rgba(245,158,11,0.15)" }}>
               King of the Hill
