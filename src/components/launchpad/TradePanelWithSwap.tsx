@@ -9,6 +9,7 @@ import { Loader2, Wallet, AlertTriangle, ChevronDown, CheckCircle2, XCircle, Ext
 import { useRugCheck } from "@/hooks/useRugCheck";
 import { useToast } from "@/hooks/use-toast";
 import { useRealSwap } from "@/hooks/useRealSwap";
+import { ProfitCardModal, type ProfitCardData } from "@/components/launchpad/ProfitCardModal";
 
 interface TradePanelWithSwapProps {
   token: Token;
@@ -31,6 +32,8 @@ export function TradePanelWithSwap({ token, userBalance = 0 }: TradePanelWithSwa
   const [instaBuy, setInstaBuy] = useState(true);
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [profitCardData, setProfitCardData] = useState<ProfitCardData | null>(null);
+  const [showProfitCard, setShowProfitCard] = useState(false);
 
   const isBuy = tradeType === 'buy';
   const numericAmount = parseFloat(amount) || 0;
@@ -117,6 +120,16 @@ export function TradePanelWithSwap({ token, userBalance = 0 }: TradePanelWithSwa
       setSelectedPreset(null);
       getBalance().then(setSolBalance).catch(() => {});
 
+      // Show profit card modal
+      setProfitCardData({
+        action: isBuy ? 'buy' : 'sell',
+        amountSol: parseFloat(amount) || 0,
+        tokenTicker: token.ticker,
+        tokenName: token.name,
+        signature: result.signature,
+      });
+      setShowProfitCard(true);
+
       toast({
         title: `${isBuy ? 'Buy' : 'Sell'} successful!`,
         description: (
@@ -183,6 +196,7 @@ export function TradePanelWithSwap({ token, userBalance = 0 }: TradePanelWithSwa
   ];
 
   return (
+    <>
     <div className="border border-border/40 rounded-lg overflow-hidden bg-[hsl(var(--card))]">
       {/* Buy / Sell Toggle */}
       <div className="grid grid-cols-2">
@@ -447,5 +461,11 @@ export function TradePanelWithSwap({ token, userBalance = 0 }: TradePanelWithSwa
         </Collapsible>
       </div>
     </div>
+      <ProfitCardModal
+        open={showProfitCard}
+        onClose={() => setShowProfitCard(false)}
+        data={profitCardData}
+      />
+    </>
   );
 }

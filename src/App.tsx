@@ -67,6 +67,7 @@ const PunchPage = lazyWithRetry(() => import("./pages/PunchPage"));
 const PunchTestPage = lazyWithRetry(() => import("./pages/PunchTestPage"));
 const PunchGamesPage = lazyWithRetry(() => import("./pages/PunchGamesPage"));
 const PunchTokenDetailPage = lazyWithRetry(() => import("./pages/PunchTokenDetailPage"));
+const ReferralRedirectPage = lazyWithRetry(() => import("./pages/ReferralRedirectPage"));
 
 // Domain-aware root: render PunchTestPage on punchlaunch.fun, FunLauncherPage otherwise
 function PunchDomainRoot() {
@@ -186,6 +187,7 @@ const App = () => (
                      <Route path="/punch-test" element={<PunchTestPage />} />
                      <Route path="/punch/token/:mintAddress" element={<PunchTokenDetailPage />} />
                      <Route path="/punch-games" element={<PunchGamesPage />} />
+                     <Route path="/link/:code" element={<ReferralRedirectPage />} />
                      <Route path="*" element={<NotFound />} />
                   </Routes>
                   </div>

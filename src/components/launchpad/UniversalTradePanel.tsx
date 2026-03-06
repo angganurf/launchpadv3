@@ -11,6 +11,7 @@ import { Loader2, Wallet, AlertTriangle, ExternalLink, ChevronDown, CheckCircle2
 import { useToast } from "@/hooks/use-toast";
 import { useRugCheck } from "@/hooks/useRugCheck";
 import { VersionedTransaction, Connection, PublicKey } from "@solana/web3.js";
+import { ProfitCardModal, type ProfitCardData } from "@/components/launchpad/ProfitCardModal";
 
 interface TokenInfo {
   mint_address: string;
@@ -60,6 +61,8 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [lastLatencyMs, setLastLatencyMs] = useState<number | null>(null);
   const [showLatency, setShowLatency] = useState(false);
+  const [profitCardData, setProfitCardData] = useState<ProfitCardData | null>(null);
+  const [showProfitCard, setShowProfitCard] = useState(false);
 
   const isBuy = tradeType === 'buy';
   const numericAmount = parseFloat(amount) || 0;
@@ -198,6 +201,17 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
 
       setAmount(''); setQuote(null); setSelectedPreset(null);
 
+      // Show profit card modal
+      setProfitCardData({
+        action: isBuy ? 'buy' : 'sell',
+        amountSol: numericAmount,
+        tokenTicker: token.ticker,
+        tokenName: token.name,
+        outputAmount: result.outputAmount,
+        signature: result.signature,
+      });
+      setShowProfitCard(true);
+
       toast({
         title: `${isBuy ? 'Buy' : 'Sell'} successful!`,
         description: (
@@ -235,6 +249,7 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
   ];
 
   return (
+    <>
     <div className="border border-border/40 rounded-lg overflow-hidden bg-[hsl(var(--card))]">
       {/* Buy / Sell Toggle */}
       <div className="grid grid-cols-2">
@@ -521,5 +536,11 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
         </div>
       </div>
     </div>
+      <ProfitCardModal
+        open={showProfitCard}
+        onClose={() => setShowProfitCard(false)}
+        data={profitCardData}
+      />
+    </>
   );
 }
