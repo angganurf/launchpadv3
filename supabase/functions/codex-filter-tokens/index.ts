@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
 
     const tokens = results.map((r: any) => {
       const address = r.token?.info?.address ?? null;
-      let imageUrl = r.token?.info?.imageSmallUrl || r.token?.info?.imageLargeUrl || null;
+      let imageUrl = r.token?.info?.imageSmallUrl || r.token?.info?.imageThumbUrl || r.token?.info?.imageLargeUrl || null;
       
       // BSC fallback: use Trust Wallet asset repo for token logos
       if (!imageUrl && address && safeNetworkId === BSC_NETWORK_ID) {
