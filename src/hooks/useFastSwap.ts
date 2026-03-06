@@ -73,6 +73,20 @@ export function useFastSwap() {
 
     const minimumAmountOut = new BN(0);
 
+    // Fetch on-chain pool state for accurate reserve data
+    let virtualSolReserves: number | undefined;
+    let virtualTokenReserves: number | undefined;
+    try {
+      const poolState = await client.state.getPool(poolAddress);
+      if (poolState) {
+        // DBC SDK uses quoteReserve (SOL) and baseReserve (token)
+        virtualSolReserves = Number(poolState.quoteReserve) / 10 ** SOL_DECIMALS;
+        virtualTokenReserves = Number(poolState.baseReserve) / 10 ** TOKEN_DECIMALS;
+      }
+    } catch (e) {
+      console.warn('[FastSwap] Failed to fetch pool state, will use DB reserves:', e);
+    }
+
     const swapTx = await client.pool.swap({
       owner: ownerPubkey,
       pool: poolAddress,
@@ -87,6 +101,7 @@ export function useFastSwap() {
     const { signature } = await signAndSendTransaction(swapTx);
 
     // Record in DB (non-blocking, fire-and-forget)
+    // Pass current on-chain reserves so the edge function uses accurate data
     supabase.functions.invoke('launchpad-swap', {
       body: {
         mintAddress: token.mint_address,
@@ -96,6 +111,8 @@ export function useFastSwap() {
         profileId: profileId || undefined,
         signature,
         mode: 'record',
+        onChainVirtualSol: virtualSolReserves,
+        onChainVirtualToken: virtualTokenReserves,
       },
     }).catch(err => console.warn('[FastSwap] DB record failed (non-fatal):', err));
 
