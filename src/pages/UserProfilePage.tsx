@@ -28,7 +28,9 @@ export default function UserProfilePage() {
   const { profileId } = useAuth();
   const [copied, setCopied] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const isOwnProfile = profileId && profile?.id === profileId;
+  const queryClient = useQueryClient();
 
   const copyWallet = () => {
     if (!profile?.solana_wallet_address) return;
