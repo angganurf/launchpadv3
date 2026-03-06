@@ -28,6 +28,7 @@ export const SparklineCanvas = memo(function SparklineCanvas({
 
     const min = Math.min(...data);
     const max = Math.max(...data);
+    const range = max - min || 1;
     const points = data.length === 1 ? [data[0], data[0]] : data;
     const isUp = points[points.length - 1] >= points[0];
 
