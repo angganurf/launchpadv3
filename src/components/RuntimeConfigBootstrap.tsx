@@ -30,7 +30,6 @@ export function RuntimeConfigBootstrap() {
     // protect against project renames that introduce redirects (redirects break
     // CORS preflight when we later send custom headers).
     const existingApiUrl = localStorage.getItem("meteoraApiUrl");
-    const existingRpcUrl = localStorage.getItem("heliusRpcUrl");
 
     const seedFromStorage = async () => {
       if (!existingApiUrl || !existingApiUrl.startsWith("https://")) return;
@@ -51,13 +50,11 @@ export function RuntimeConfigBootstrap() {
 
         window.__PUBLIC_CONFIG__ = {
           meteoraApiUrl: finalOrigin || normalizedExisting,
-          heliusRpcUrl: existingRpcUrl || undefined,
         };
       } catch {
         // If we can't reach it, fall back to cached values until runtime config loads.
         window.__PUBLIC_CONFIG__ = {
           meteoraApiUrl: normalize(existingApiUrl),
-          heliusRpcUrl: existingRpcUrl || undefined,
         };
       }
     };
