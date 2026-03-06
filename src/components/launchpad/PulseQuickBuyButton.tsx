@@ -11,8 +11,10 @@ import { NotLoggedInModal } from "@/components/launchpad/NotLoggedInModal";
 import type { Token } from "@/hooks/useLaunchpad";
 import type { FunToken } from "@/hooks/useFunTokensPaginated";
 import type { CodexPairToken } from "@/hooks/useCodexNewPairs";
+import type { SupportedChain } from "@/contexts/ChainContext";
 
 const PRESET_AMOUNTS = [0.1, 0.5, 1, 2];
+const BNB_PRESET_AMOUNTS = [0.05, 0.1, 0.5, 1];
 
 interface PulseQuickBuyButtonProps {
   /** Pass either a FunToken or CodexPairToken - will be bridged to Token internally */
@@ -22,6 +24,8 @@ interface PulseQuickBuyButtonProps {
   quickBuyAmount?: number;
   /** Compact style for table/list views */
   isCompact?: boolean;
+  /** Chain context — when 'bnb', opens PancakeSwap instead of on-chain swap */
+  chain?: SupportedChain;
 }
 
 function bridgeFunToken(t: FunToken): Token {
