@@ -1,50 +1,82 @@
 
 
-## Add Pulse Features (P1/P2/P3, Filters, Quick Buy) to Launchpad Main Page + Login Popup
+## Plan: Unified Admin Panel + Fix Reclaim 401 + Announcement Manager
 
-### What We're Doing
+### Problem 1: Reclaim 401 Error
 
-The main LaunchpadPage currently shows token cards in a basic list without any Pulse terminal features. We'll bring over the same P1/P2/P3 wallet presets, filter system, and quick buy buttons from the Pulse trade terminal — and add a styled "not logged in" popup when unauthenticated users try to trade.
+The `trading-agent-reclaim-all` edge function is **missing from `supabase/config.toml`**. Without a `[functions.trading-agent-reclaim-all]` entry with `verify_jwt = false`, the function requires a valid JWT, and the anon key bearer token fails JWT validation before the function code even runs. This is why both the hardcoded secret AND the treasury secret fail — the request is rejected at the gateway level.
+
+**Fix:** Add `[functions.trading-agent-reclaim-all]` with `verify_jwt = false` to `supabase/config.toml`. The function already has its own admin secret auth internally.
+
+Additionally, the reclaim function hits RPC 429 rate limits. We'll add per-agent delays and fallback to public RPC when Helius is rate-limited.
+
+### Problem 2: Scattered Admin Pages
+
+Currently there are **11+ separate admin pages**, each with their own password gates:
+
+| Page | Route | Password |
+|------|-------|----------|
+| Treasury Admin | `/admin/treasury` | `claw2024treasury` |
+| Twitter Bot | `/admin/twitter` | localStorage secret |
+| X Bot | `/admin/x-bots` | `claw` |
+| Agent Logs | `/admin/agent-logs` | None (open) |
+| ClawBook Admin | `/admin/clawbook` | Wallet-based admin check |
+| Influencer Replies | `/admin/influencer-replies` | None (open) |
+| Promo Mentions | `/admin/promo-mentions` | None (open) |
+| Deployer Dust | `/admin/deployer-dust` | `claw2024treasury` |
+| Colosseum | `/admin/colosseum` | None (open) |
+| Follower Scan | `/admin/follower-scan` | `claw` |
+| Claw Admin Launch | `/claw/adminlaunch` | `claw` |
+| Partner Fees | `/partnerfees` | `partner777` |
+
+### Problem 3: Announcement Management
+
+The `announcements` table exists and `useAnnouncements` hook shows active announcements as toasts via `LaunchpadLayout`. But there's no UI to create/edit/toggle announcements — it's all manual DB work.
+
+---
 
 ### Changes
 
-**1. `src/pages/LaunchpadPage.tsx`** — Major refactor:
-- Import and mount `PulseColumnHeaderBar` at the top of the token list (with P1/P2/P3 presets, quick buy amount, filter button)
-- Import and mount `PulseFiltersDialog` for advanced filtering
-- Add `usePulseFilters` hook for filter state
-- Add `useSolPrice` hook so token cards get SOL price for USD formatting
-- Add `quickBuyAmount` state synced with localStorage (same as TradePage pattern)
-- Pass `quickBuyAmount` to each `TokenCard`
+**1. `supabase/config.toml`** — Add missing entry:
+```toml
+[functions.trading-agent-reclaim-all]
+verify_jwt = false
+```
 
-**2. `src/components/launchpad/TokenCard.tsx`** — Add quick buy button:
-- Accept new `quickBuyAmount` prop
-- Add `PulseQuickBuyButton` at the bottom of each card (next to the Trade button area)
-- The existing `PulseQuickBuyButton` already handles auth check and calls `login()` if not authenticated
+**2. `supabase/functions/trading-agent-reclaim-all/index.ts`** — Add 3-second delay between agents to avoid RPC 429s. Add try-catch around `getBalance` with retry logic.
 
-**3. `src/components/launchpad/NotLoggedInModal.tsx`** — New file:
-- Dark card modal matching the reference screenshot style (similar to the "ADD CELEBRITY LINKS" popup)
-- Header with link icon: "CONNECT TO TRADE"
-- Description: "Log in to start trading tokens instantly with one-click quick buy"
-- Olive/yellow CTA button: "CONNECT WALLET" that calls `useAuth().login()`
-- Terms text at bottom
-- Exported as a reusable dialog component
+**3. Create `src/pages/AdminPanelPage.tsx`** — Unified admin panel with single password gate (`claw2024treasury`) and tabs:
+- **Treasury** — Fee Recovery (existing `TreasuryAdminPage` fee scanning/claiming content)
+- **Agent Reclaim** — Reclaim All button + results (existing reclaim content)
+- **Deployer Dust** — Deployer wallet recovery (from `DeployerDustAdminPage`)
+- **Announcements** — CRUD for announcements table (new):
+  - List all announcements with is_active toggle
+  - Create new announcement form (title, description, emoji, action_label, action_url, expires_at)
+  - Delete announcements
+  - "Clear seen cache" button (clears localStorage `seen-announcements` for testing)
+  - Toggle which pages show announcements (global config stored in localStorage for now)
+- **X Bots** — Embedded X Bot admin (from `XBotAdminPage`)
+- **Agent Logs** — Embedded agent logs (from `AgentLogsAdminPage`)  
+- **Colosseum** — Embedded colosseum admin (from `ColosseumAdminPage`)
+- **Base Deploy** — Existing Base deploy panel
+- **ALT Setup** — Existing ALT setup panel
+- **Follower Scan** — Embedded follower scan
+- **Promo/Influencer** — Twitter promo + influencer reply panels
 
-**4. `src/components/launchpad/PulseQuickBuyButton.tsx`** — Update auth flow:
-- Instead of just calling `login()` directly when not authenticated, show the new `NotLoggedInModal` first
-- This gives a branded, informative experience before the Privy login flow kicks in
+Each tab will lazy-load its content. The existing individual admin routes will redirect to `/admin?tab=<name>`.
 
-### Implementation Details
+**4. `src/hooks/useAnnouncements.ts`** — Add a check for a `announcement-disabled-pages` localStorage key. If the current pathname is in the disabled list, skip showing announcements. This gives admin control over which pages show popups.
 
-The `PulseColumnHeaderBar` will be placed above the token grid on the launchpad page, providing the same ⚡ quick buy amount editor, P1/P2/P3 presets, and filter icon. The filter state from `usePulseFilters` will be applied to the launchpad tokens using `applyFilterToFunTokens`.
+**5. `src/App.tsx`** — Add route for `/admin` pointing to `AdminPanelPage`. Update existing admin routes to redirect to the unified panel with appropriate tab parameter.
 
-The `NotLoggedInModal` will use the same dark glassmorphic styling as `VerifyAccountModal` — dark card, uppercase mono headers, olive/yellow `#8B8000` CTA button, border accents, and terms footer text.
-
-### Files Summary
+### File Summary
 
 | File | Action |
 |------|--------|
-| `src/pages/LaunchpadPage.tsx` | Edit — add PulseColumnHeaderBar, filters, quickBuyAmount state |
-| `src/components/launchpad/TokenCard.tsx` | Edit — add PulseQuickBuyButton with quickBuyAmount |
-| `src/components/launchpad/NotLoggedInModal.tsx` | Create — branded login popup |
-| `src/components/launchpad/PulseQuickBuyButton.tsx` | Edit — show NotLoggedInModal instead of bare login() |
+| `supabase/config.toml` | Edit — add `trading-agent-reclaim-all` entry |
+| `supabase/functions/trading-agent-reclaim-all/index.ts` | Edit — add retry/delay for RPC 429 |
+| `src/pages/AdminPanelPage.tsx` | Create — unified admin panel |
+| `src/components/admin/AnnouncementManager.tsx` | Create — CRUD for announcements |
+| `src/hooks/useAnnouncements.ts` | Edit — add page-level toggle support |
+| `src/App.tsx` | Edit — add `/admin` route, redirect old routes |
 
