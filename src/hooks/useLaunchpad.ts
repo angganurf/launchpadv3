@@ -309,7 +309,18 @@ export function useLaunchpad() {
               ticker,
               image_url,
               price_sol,
-              status
+              status,
+              dbc_pool_address,
+              virtual_sol_reserves,
+              virtual_token_reserves,
+              real_sol_reserves,
+              real_token_reserves,
+              total_supply,
+              graduation_threshold_sol,
+              market_cap_sol,
+              volume_24h_sol,
+              holder_count,
+              bonding_curve_progress
             )
           `)
           .eq('wallet_address', walletAddress)
