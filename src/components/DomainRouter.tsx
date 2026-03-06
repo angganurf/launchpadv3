@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTrackReferral } from "@/hooks/useReferral";
 
 /**
  * Domain-based routing component
@@ -8,6 +9,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 export function DomainRouter() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Track referrals from /link/:code URLs
+  useTrackReferral();
 
   useEffect(() => {
     const hostname = window.location.hostname;

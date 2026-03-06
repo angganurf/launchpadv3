@@ -1,0 +1,96 @@
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+
+const REF_STORAGE_KEY = "ref";
+
+export function useReferralCode() {
+  const { profileId } = useAuth();
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [referralCount, setReferralCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!profileId) return;
+    setLoading(true);
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.rpc("get_or_create_referral_code", {
+          p_profile_id: profileId,
+        });
+        if (!error && data) setReferralCode(data as string);
+
+        const { count } = await supabase
+          .from("referrals")
+          .select("*", { count: "exact", head: true })
+          .eq("referrer_id", profileId);
+        setReferralCount(count ?? 0);
+      } catch {
+        // silent
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [profileId]);
+
+  const referralLink = referralCode
+    ? `${window.location.origin}/link/${referralCode}`
+    : null;
+
+  return { referralCode, referralLink, referralCount, loading };
+}
+
+/**
+ * Captures referral code from URL on first visit, persists in localStorage,
+ * and records the referral when user authenticates.
+ */
+export function useTrackReferral() {
+  const { profileId, solanaAddress } = useAuth();
+
+  // On mount, check if we're on a /link/:code path and store it
+  useEffect(() => {
+    const path = window.location.pathname;
+    const match = path.match(/^\/link\/([a-zA-Z0-9]+)$/);
+    if (match) {
+      localStorage.setItem(REF_STORAGE_KEY, match[1]);
+    }
+  }, []);
+
+  // When user authenticates, record referral
+  useEffect(() => {
+    if (!profileId) return;
+    const storedCode = localStorage.getItem(REF_STORAGE_KEY);
+    if (!storedCode) return;
+
+    (async () => {
+      try {
+        // Look up referrer from code
+        const { data: codeRow } = await supabase
+          .from("referral_codes")
+          .select("profile_id")
+          .eq("code", storedCode)
+          .maybeSingle();
+
+        if (!codeRow || codeRow.profile_id === profileId) {
+          localStorage.removeItem(REF_STORAGE_KEY);
+          return;
+        }
+
+        // Insert referral (unique constraint prevents duplicates)
+        const { error } = await supabase.from("referrals").insert({
+          referrer_id: codeRow.profile_id,
+          referred_id: profileId,
+          referred_wallet: solanaAddress || null,
+        });
+
+        if (!error || error.code === "23505") {
+          // Success or already referred - clear storage either way
+          localStorage.removeItem(REF_STORAGE_KEY);
+        }
+      } catch {
+        // Keep in localStorage to retry next time
+      }
+    })();
+  }, [profileId, solanaAddress]);
+}
