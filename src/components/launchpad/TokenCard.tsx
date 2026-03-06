@@ -8,6 +8,7 @@ import { PumpBadge } from "@/components/clawbook/PumpBadge";
 import { BagsBadge } from "@/components/clawbook/BagsBadge";
 import { PhantomBadge } from "@/components/clawbook/PhantomBadge";
 import { PulseQuickBuyButton } from "@/components/launchpad/PulseQuickBuyButton";
+import { SparklineCanvas } from "@/components/launchpad/SparklineCanvas";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ interface TokenCardProps {
   creatorAvatarUrl?: string | null;
   creatorVerified?: boolean;
   quickBuyAmount?: number;
+  sparklineData?: number[];
 }
 
 interface XProfileInfo {
@@ -57,7 +59,7 @@ function extractXUsername(twitterUrl?: string | null): string | null {
   }
 }
 
-export function TokenCard({ token, solPrice, isPromoted, creatorUsername, creatorAvatarUrl, creatorVerified, quickBuyAmount }: TokenCardProps) {
+export function TokenCard({ token, solPrice, isPromoted, creatorUsername, creatorAvatarUrl, creatorVerified, quickBuyAmount, sparklineData }: TokenCardProps) {
   const [copiedCA, setCopiedCA] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
   const [xProfile, setXProfile] = useState<XProfileInfo | null>(null);
@@ -156,8 +158,13 @@ export function TokenCard({ token, solPrice, isPromoted, creatorUsername, creato
     <Link
       ref={cardRef}
       to={tradeUrl}
-      className={`lt-card group block overflow-hidden ${isPulsing ? 'lt-shake' : ''} ${isNearGrad ? 'lt-card-hot' : ''}`}
+      className={`lt-card group block overflow-hidden relative ${isPulsing ? 'lt-shake' : ''} ${isNearGrad ? 'lt-card-hot' : ''}`}
     >
+      {/* Sparkline background */}
+      <div className="absolute inset-0 z-0 opacity-40">
+        <SparklineCanvas data={sparklineData && sparklineData.length >= 2 ? sparklineData : [1, 1]} />
+      </div>
+
       {/* ── Token Image ── */}
       <div className="relative w-full" style={{ paddingBottom: "54%" }}>
         <div className="absolute inset-0">

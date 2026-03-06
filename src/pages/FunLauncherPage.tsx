@@ -12,6 +12,8 @@ import { useFunTokensPaginated } from "@/hooks/useFunTokensPaginated";
 import { useJustLaunched } from "@/hooks/useJustLaunched";
 import { KingOfTheHill } from "@/components/launchpad/KingOfTheHill";
 import { useSolPrice } from "@/hooks/useSolPrice";
+import { useSparklineBatch } from "@/hooks/useSparklineBatch";
+import { SparklineCanvas } from "@/components/launchpad/SparklineCanvas";
 import { useFunFeeClaims, useFunFeeClaimsSummary, useFunDistributions } from "@/hooks/useFunFeeData";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
@@ -158,6 +160,14 @@ export default function FunLauncherPage() {
     .replace(" minutes", "m").replace(" minute", "m").replace(" days", "d").replace(" day", "d")
     .replace(" months", "mo").replace(" month", "mo");
 
+  // Sparkline batch for grid + just launched tokens
+  const allSparklineAddresses = useMemo(() => {
+    const gridAddrs = tokens.map(t => t.mint_address).filter(Boolean) as string[];
+    const jlAddrs = justLaunchedTokens.map(t => t.mint_address).filter(Boolean) as string[];
+    return [...new Set([...gridAddrs, ...jlAddrs])];
+  }, [tokens, justLaunchedTokens]);
+  const { data: sparklines } = useSparklineBatch(allSparklineAddresses);
+
   const handleLaunchSuccess = useCallback(() => refetch(), [refetch]);
   const handleShowResult = useCallback((result: LaunchResult) => {
     setLaunchResult(result);
@@ -282,10 +292,14 @@ export default function FunLauncherPage() {
                     <Link
                       key={token.id}
                       to={`/trade/${token.mint_address || token.id}`}
-                      className="flex-shrink-0 w-[150px] rounded-xl overflow-hidden group hover-lift bg-surface border border-border hover:border-success"
+                      className="flex-shrink-0 w-[150px] rounded-xl overflow-hidden group hover-lift bg-surface border border-border hover:border-success relative"
                     >
+                      {/* Sparkline background */}
+                      <div className="absolute inset-0 z-0 opacity-40">
+                        <SparklineCanvas data={token.mint_address && sparklines?.[token.mint_address]?.length >= 2 ? sparklines[token.mint_address] : [1, 1]} />
+                      </div>
                       {/* Image */}
-                      <div className="relative w-full" style={{ paddingBottom: "65%" }}>
+                      <div className="relative w-full z-[1]" style={{ paddingBottom: "65%" }}>
                         <div className="absolute inset-0">
                           {token.image_url ? (
                             <img src={token.image_url} alt={token.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }} />
@@ -334,7 +348,7 @@ export default function FunLauncherPage() {
                     </div>
                   ))
                   : tokens.map(token => (
-                    <TokenCard key={token.id} token={token} solPrice={solPrice} quickBuyAmount={quickBuyAmount} />
+                    <TokenCard key={token.id} token={token} solPrice={solPrice} quickBuyAmount={quickBuyAmount} sparklineData={token.mint_address ? sparklines?.[token.mint_address] : undefined} />
                   ))
                 }
               </div>

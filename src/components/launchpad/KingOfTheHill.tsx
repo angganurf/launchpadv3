@@ -12,6 +12,8 @@ import { OptimizedTokenImage } from "@/components/ui/OptimizedTokenImage";
 import { copyToClipboard } from "@/lib/clipboard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PulseQuickBuyButton } from "@/components/launchpad/PulseQuickBuyButton";
+import { useSparklineBatch } from "@/hooks/useSparklineBatch";
+import { SparklineCanvas } from "@/components/launchpad/SparklineCanvas";
 import type { FunToken } from "@/hooks/useFunTokensPaginated";
 
 /* ── rank config ── */
@@ -122,7 +124,7 @@ function kingToFunToken(t: KingToken): FunToken {
 }
 
 /* ── premium card ── */
-function KingCard({ token, rank, quickBuyAmount }: { token: KingToken; rank: number; quickBuyAmount: number }) {
+function KingCard({ token, rank, quickBuyAmount, sparklineData }: { token: KingToken; rank: number; quickBuyAmount: number; sparklineData?: number[] }) {
   const navigate = useNavigate();
   const funToken = useMemo(() => kingToFunToken(token), [token]);
   const [blink, setBlink] = useState(false);
@@ -200,6 +202,11 @@ function KingCard({ token, rank, quickBuyAmount }: { token: KingToken; rank: num
         padding: "20px",
       }}
     >
+      {/* Sparkline background */}
+      <div className="absolute inset-0 z-0 opacity-40">
+        <SparklineCanvas data={sparklineData && sparklineData.length >= 2 ? sparklineData : [1, 1]} />
+      </div>
+
       {/* King crown glow for #1 */}
       {r.king && (
         <div className="absolute -top-px -left-px -right-px h-[2px] rounded-t-2xl bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
@@ -433,6 +440,12 @@ export function KingOfTheHill() {
     return 0.5;
   });
 
+  const sparklineAddresses = useMemo(
+    () => (tokens ?? []).map(t => t.mint_address).filter(Boolean) as string[],
+    [tokens]
+  );
+  const { data: sparklines } = useSparklineBatch(sparklineAddresses);
+
   return (
     <div className="w-full">
       {/* Premium Header */}
@@ -462,7 +475,7 @@ export function KingOfTheHill() {
       <div className="flex flex-col md:flex-row gap-4">
         {isLoading
           ? [1, 2, 3].map(i => <KingCardSkeleton key={i} />)
-          : tokens?.map((t, i) => <KingCard key={t.id} token={t} rank={i + 1} quickBuyAmount={quickBuyAmount} />)
+          : tokens?.map((t, i) => <KingCard key={t.id} token={t} rank={i + 1} quickBuyAmount={quickBuyAmount} sparklineData={t.mint_address ? sparklines?.[t.mint_address] : undefined} />)
         }
       </div>
     </div>

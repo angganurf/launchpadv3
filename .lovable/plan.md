@@ -1,40 +1,45 @@
 
 
-## Plan: Add Sparkline Background Charts to Main Page Tokens
+## Two Issues to Fix
 
-### Scope
-Add real-time background sparkline charts (identical to the Pulse section) to three areas on the main page (`/fun`):
-1. **King of the Hill** cards (top 3 tokens)
-2. **Token grid** cards (all tokens below)
-3. **Just Launched** horizontal scroll cards
+### 1. Trade Success Toast -- Use the Same Radix Toast Style as Announcements
 
-### Changes
+The trade success toast (line 133 in `TradePanelWithSwap.tsx`) already uses the Radix `useToast` system which renders through the styled `toast.tsx` component. The announcements, however, use **Sonner** (`toast()` from `sonner`), which has a completely different, simpler appearance.
 
-**1. `src/components/launchpad/KingOfTheHill.tsx`**
-- Import `useSparklineBatch` and `SparklineCanvas`
-- In the `KingOfTheHill` export function, collect all `mint_address` values from `tokens` and call `useSparklineBatch`
-- Pass `sparklineData` down to each `KingCard`
-- Inside `KingCard`, add `<SparklineCanvas data={sparklineData ?? [1, 1]} />` as an absolutely-positioned background element (behind all card content via `z-0`, card content gets `relative z-10`)
-- The outer card div already has `relative` and `overflow` styling
+**Plan:** Migrate the announcement toasts in `useAnnouncements.ts` to use the Radix `useToast` system (from `@/hooks/use-toast`) so both announcements and trade success notifications share the same professional dark glass style. Since `useAnnouncements` is a hook, it can import the `toast` function from `use-toast.ts` directly.
 
-**2. `src/components/launchpad/TokenCard.tsx`**
-- Accept a new optional prop `sparklineData?: number[]`
-- Inside the card's root `<Link>`, add `<SparklineCanvas data={sparklineData ?? [1, 1]} />` positioned absolutely behind content
-- Add `relative overflow-hidden` to the root element if not already present
+Alternatively (and more practically): the trade success toast already looks professional. The user likely wants both to look the same. The simplest approach is to ensure the trade toasts use the `variant: "success"` for the green styled variant already defined in `toast.tsx`.
 
-**3. `src/pages/FunLauncherPage.tsx`**
-- Import `useSparklineBatch` and `SparklineCanvas`
-- Collect all `mint_address` values from both `tokens` (grid) and `justLaunchedTokens`
-- Call `useSparklineBatch` once with the combined list
-- Pass sparkline data to each `<TokenCard>` via the new `sparklineData` prop
-- For the inline Just Launched cards, wrap each card in a `relative overflow-hidden` container and render `<SparklineCanvas>` behind the content
+**Changes:**
+- `src/components/launchpad/TradePanelWithSwap.tsx`: Add `variant: "success"` to the trade success toast call (line 133).
 
-### Data Flow
-- All addresses collected → single `useSparklineBatch` call → 500ms polling
-- Tokens without Codex data get `[1, 1]` fallback → straight green line
+### 2. Alpha Tracker Shows No Trades from the Platform
 
-### Files Modified
-- `src/components/launchpad/KingOfTheHill.tsx`
-- `src/components/launchpad/TokenCard.tsx`
-- `src/pages/FunLauncherPage.tsx`
+The `alpha_trades` table is never populated by any code path. The `launchpad-swap` edge function records trades into `launchpad_transactions` but never inserts into `alpha_trades`. The Alpha Tracker feed reads exclusively from `alpha_trades`.
+
+**Plan:** Add an insert into `alpha_trades` inside the `launchpad-swap` edge function after every successful trade recording (both in "record" mode and in the standard swap flow). This will populate the Alpha Tracker with platform trades in real-time.
+
+**Changes:**
+- `supabase/functions/launchpad-swap/index.ts`: After recording a transaction in `launchpad_transactions`, also insert a row into `alpha_trades` with the relevant fields (wallet_address, token_mint, token_name, token_ticker, trade_type, amount_sol, amount_tokens, price_usd, tx_hash, trader_display_name, trader_avatar_url). This needs to happen in both the "record" mode block (~line 161) and the standard swap block.
+
+### Technical Details
+
+**alpha_trades schema** (from types.ts):
+- `wallet_address`, `token_mint`, `token_name`, `token_ticker`, `trade_type`, `amount_sol`, `amount_tokens`, `price_usd`, `tx_hash`, `created_at`, `trader_display_name`, `trader_avatar_url`
+
+**Data available in launchpad-swap:**
+- `userWallet` -> `wallet_address`
+- `token.mint_address` -> `token_mint`  
+- `token.name` -> `token_name`
+- `token.ticker` -> `token_ticker`
+- `isBuy ? "buy" : "sell"` -> `trade_type`
+- `solAmount` -> `amount_sol`
+- `tokenAmount` -> `amount_tokens`
+- `newPrice` -> can derive `price_usd` (if SOL price available, otherwise null)
+- `clientSignature` / generated signature -> `tx_hash`
+- Profile lookup for display name/avatar
+
+**Files to modify:**
+1. `src/components/launchpad/TradePanelWithSwap.tsx` -- add `variant: "success"` to trade success toast
+2. `supabase/functions/launchpad-swap/index.ts` -- insert into `alpha_trades` after each successful trade
 
