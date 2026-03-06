@@ -1,62 +1,28 @@
 
 
-## Fix KingCard Layout, Alignment & Polish
+## Fix: Shrink KingCard Footer Buttons & Move Socials
 
-After reviewing the component code and CSS, the KingCard in `KingOfTheHill.tsx` is structurally sound but has several visual inconsistencies visible in the screenshot. Here is the targeted fix plan:
+The buttons in the KingCard footer are oversized (full `min-h-[36px]`, `px-4 py-2`) and the social icons are crammed on the same line. The fix:
 
-### Problems & Fixes
+### Changes to `src/components/launchpad/KingOfTheHill.tsx`
 
-**1. MCAP / HOLDERS misalignment across cards**
-- The current layout uses `flex items-center gap-4` which causes values to float loosely when content widths differ between cards
-- Fix: Use a CSS grid with fixed columns (`grid grid-cols-2`) for MCAP and HOLDERS, so labels and values always align vertically. Volume 24h spans full width below if present.
+**1. Shrink footer buttons** (lines 308-326)
+- Reduce Trade button: `min-h-[30px] px-3 py-1.5 text-[11px]` and smaller icon (`w-3 h-3`)
+- Reduce Quick Buy wrapper: keep `flex-1` but the CSS override will handle sizing
 
-**2. Progress bar: "BONDING PROGRESS" not duplicated in code (only one instance), but the bar is still thin at 8px**
-- Increase to 10px height for more visual weight
-- Keep the single label + percentage layout (already correct in code)
-- Make percentage text slightly larger (13px bold)
+**2. Move social icons to their own row above the buttons** (lines 328-389)
+- Move the social icons `<div>` to sit above the footer buttons row, as a separate compact line with `mb-2`
+- Social icons stay small (`w-2.5 h-2.5`), padding `p-1`
 
-**3. Footer buttons inconsistent sizing**
-- Trade button and Quick Buy button have different padding/height
-- Fix: Give both buttons the same `py-2 px-4` and `rounded-xl`, ensure flex-1 so they share width equally
-- Social icons: add a subtle separator (thin border-left) and ensure consistent 28px icon button sizing
+### Changes to `src/index.css`
 
-**4. Card hover effect**
-- Already has `hover:scale-[1.02]` and glow -- this is fine, keep it
-- Add a subtle `hover:border-opacity` transition for smoother feel
+**3. Shrink the king-quick-buy-wrapper `.pulse-sol-btn` override** (lines 1370-1396)
+- Reduce padding: `5px 12px` (was `7px 16px`)
+- Reduce min-height: `30px` (was `36px`)
+- Reduce font-size: `11px` (was `12px`)
 
-**5. X handle row**
-- Already implemented with "— None" fallback -- this is correct
-- No changes needed
-
-### Files to Modify
-
-**`src/components/launchpad/KingOfTheHill.tsx`** (lines 268-305, 312-330):
-- Replace the MCAP/HOLDERS flex layout with a 2-column grid for consistent alignment
-- Make MCAP value `text-lg` (was `text-xl` -- slightly smaller for better fit)
-- Holders value bumped to `text-sm font-bold`
-- Progress bar height increased to 10px
-- Footer: both buttons get `flex-1` for equal width, matched padding
-
-**`src/index.css`** (lines 1370-1393):
-- Ensure `.king-quick-buy-wrapper` button gets `flex: 1` and `width: 100%`
-- Add `min-height: 36px` to both footer buttons for consistent height
-
-### Technical Details
-
-MCAP/HOLDERS grid structure:
-```text
-┌─────────────┬─────────────┐
-│ MCAP        │ HOLDERS     │
-│ $2.6K +5.2% │ 👥 2        │
-└─────────────┴─────────────┘
-│ VOL 24H (optional, full width) │
-```
-
-Footer buttons:
-```text
-┌──────────┬──────────┐
-│  Trade ↗ │ ⚡0.8 SOL │
-└──────────┴──────────┘
-  [𝕏] [💬] [🌐] [📋] [📊]
-```
+### Result
+- Two compact, equal-width buttons side by side (Trade + Quick Buy), ~30px tall
+- Social icons on a separate subtle row above, small and tidy
+- No overflow on mobile
 
