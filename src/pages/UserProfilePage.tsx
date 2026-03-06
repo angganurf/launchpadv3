@@ -8,6 +8,8 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { VerifyAccountModal } from "@/components/launchpad/VerifyAccountModal";
+import { EditProfileModal } from "@/components/profile/EditProfileModal";
+import { useQueryClient } from "@tanstack/react-query";
 
 function truncateWallet(addr: string | null) {
   if (!addr) return "—";
@@ -26,7 +28,9 @@ export default function UserProfilePage() {
   const { profileId } = useAuth();
   const [copied, setCopied] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const isOwnProfile = profileId && profile?.id === profileId;
+  const queryClient = useQueryClient();
 
   const copyWallet = () => {
     if (!profile?.solana_wallet_address) return;
@@ -91,6 +95,14 @@ export default function UserProfilePage() {
                 <p className="text-muted-foreground text-sm font-mono">@{profile.username}</p>
               )}
             </div>
+            {isOwnProfile && (
+              <button
+                onClick={() => setEditOpen(true)}
+                className="ml-auto px-4 py-1.5 rounded-full text-xs font-bold border border-border text-foreground hover:bg-muted/50 transition-colors self-center shrink-0"
+              >
+                Edit profile
+              </button>
+            )}
           </div>
 
           {/* Wallet + Bio */}
@@ -117,7 +129,14 @@ export default function UserProfilePage() {
             </button>
           )}
 
-          <VerifyAccountModal open={verifyOpen} onOpenChange={setVerifyOpen} />
+        <EditProfileModal
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          profile={profile}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ["user-profile", identifier] })}
+        />
+
+        <VerifyAccountModal open={verifyOpen} onOpenChange={setVerifyOpen} />
 
           {/* Stats Row */}
           <div className="grid grid-cols-4 gap-3 border border-border/30 rounded-lg p-3 bg-muted/20">
