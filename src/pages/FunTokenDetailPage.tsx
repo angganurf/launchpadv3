@@ -66,6 +66,7 @@ function formatSolAmount(amount: number): string {
 /** Lightweight view for tokens not in our database — fetched from Codex on-chain data */
 function ExternalTokenView({ token, mintAddress, solPrice, isBsc = false }: { token: import("@/hooks/useExternalToken").ExternalToken; mintAddress: string; solPrice: number; isBsc?: boolean }) {
   const privyAvailable = usePrivyAvailable();
+  const { solanaAddress } = useAuth();
   const { toast } = useToast();
   const [mobileTab, setMobileTab] = useState<'trade' | 'chart'>('trade');
 
