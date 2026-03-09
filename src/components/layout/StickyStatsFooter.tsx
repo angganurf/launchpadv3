@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useLaunchpadStats } from "@/hooks/useLaunchpadStats";
 import { useLocation } from "react-router-dom";
 import { ChevronDown, Server, RefreshCw, Layers } from "lucide-react";
+import { MarketLighthouse } from "./MarketLighthouse";
 import pumpfunPill from "@/assets/pumpfun-pill.webp";
 import meteoraIcon from "@/assets/meteora-icon.svg";
 import bonkIcon from "@/assets/bonk-icon.jpg";
