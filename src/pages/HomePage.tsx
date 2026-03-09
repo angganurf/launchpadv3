@@ -10,6 +10,7 @@ import { useFunTokensPaginated } from "@/hooks/useFunTokensPaginated";
 import { useCodexNewPairs, SOLANA_NETWORK_ID } from "@/hooks/useCodexNewPairs";
 import { useSolPrice } from "@/hooks/useSolPrice";
 import { AxiomTerminalGrid } from "@/components/launchpad/AxiomTerminalGrid";
+import { SparklineCanvas } from "@/components/launchpad/SparklineCanvas";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
@@ -73,13 +74,17 @@ function LeverageCard({ market }: { market: AsterMarket }) {
   return (
     <Link
       to={`/leverage?symbol=${market.symbol}`}
-      className="flex flex-col gap-2 p-3.5 rounded-xl bg-card/60 border border-border/50 hover:border-primary/30 transition-all group"
+      className="relative flex flex-col gap-2 p-3.5 rounded-xl bg-card/60 border border-border/50 hover:border-primary/30 transition-all group overflow-hidden"
     >
-      <div className="flex items-center justify-between">
+      {/* Sparkline background */}
+      <div className="absolute inset-0 z-0 opacity-40 pointer-events-none overflow-hidden rounded-xl">
+        <SparklineCanvas data={[1, 1]} seed={market.symbol} />
+      </div>
+      <div className="relative z-10 flex items-center justify-between">
         <span className="text-sm font-bold text-foreground">{market.baseAsset}/{market.quoteAsset}</span>
         <span className="text-[10px] text-muted-foreground font-mono">{market.maxLeverage}x</span>
       </div>
-      <div className="flex items-center justify-between">
+      <div className="relative z-10 flex items-center justify-between">
         <span className="text-xs font-mono text-foreground">${parseFloat(market.lastPrice).toLocaleString()}</span>
         <span className={cn(
           "text-xs font-bold",
@@ -88,7 +93,7 @@ function LeverageCard({ market }: { market: AsterMarket }) {
           {isPositive ? "+" : ""}{change.toFixed(2)}%
         </span>
       </div>
-      <div className="text-[10px] text-muted-foreground">Vol {formatVol}</div>
+      <div className="relative z-10 text-[10px] text-muted-foreground">Vol {formatVol}</div>
     </Link>
   );
 }
