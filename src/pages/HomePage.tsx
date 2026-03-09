@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 import { format } from "date-fns";
+import { timeAgo, formatTokenAmt } from "@/lib/tradeUtils";
 import saturnLogo from "@/assets/saturn-logo.png";
 
 /* ── Compact Alpha Trade Row ── */
