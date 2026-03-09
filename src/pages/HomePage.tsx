@@ -35,7 +35,7 @@ function StatusPill({ status }: { status: "HOLDING" | "PARTIAL" | "SOLD" }) {
 }
 
 /* ── Detailed Alpha Trade Row ── */
-function AlphaTradeRow({ trade, position }: { trade: AlphaTrade; position?: import("@/lib/tradeUtils").PositionSummary }) {
+function AlphaTradeRow({ trade, position }: { trade: AlphaTrade; position?: PositionSummary }) {
   const isBuy = trade.trade_type === "buy";
   return (
     <Link
