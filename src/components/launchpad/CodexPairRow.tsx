@@ -194,6 +194,7 @@ export const CodexPairRow = memo(function CodexPairRow({ token, quickBuyAmount, 
             )}
           </div>
         </div>
+        </div>
       </div>
 
       {/* Row 2: Bottom bar */}

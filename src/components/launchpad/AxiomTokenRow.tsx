@@ -193,6 +193,7 @@ export const AxiomTokenRow = memo(function AxiomTokenRow({ token, solPrice, quic
             )}
           </div>
         </div>
+        </div>
       </div>
 
       {/* Row 2: Bottom bar */}
