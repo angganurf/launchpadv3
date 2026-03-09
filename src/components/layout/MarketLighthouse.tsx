@@ -114,17 +114,17 @@ export function MarketLighthouse({
       overflowY: compact ? "auto" : undefined,
     }}>
       {/* Header */}
-      <div style={{ ...S.row, justifyContent: "space-between", marginBottom: "10px" }}>
+      <div style={{ ...S.row, justifyContent: "space-between", marginBottom: compact ? "6px" : "10px" }}>
         <div style={{ ...S.row, ...S.gap6 }}>
-          <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: g, display: "inline-block", flexShrink: 0 }} />
-          <span style={{ fontSize: "15px", fontWeight: 600 }}>Market Lighthouse</span>
+          <span style={{ width: compact ? "6px" : "8px", height: compact ? "6px" : "8px", borderRadius: "50%", background: g, display: "inline-block", flexShrink: 0 }} />
+          <span style={{ fontSize: sz.fs.h, fontWeight: 600 }}>Market Lighthouse</span>
           {isLoading && <Loader2 style={{ width: "12px", height: "12px", animation: "spin 1s linear infinite", color: dim }} />}
         </div>
         <div style={{ ...S.row, gap: "2px" }}>
           {TIME_TABS.map(t => (
             <button key={t} onClick={() => setActiveTab(t)} style={{
               background: "none", border: "none", cursor: "pointer",
-              fontSize: "11px", padding: "2px 5px", borderRadius: "4px",
+              fontSize: sz.fs.tab, padding: compact ? "1px 4px" : "2px 5px", borderRadius: "4px",
               color: activeTab === t ? "#fff" : "#7080BB",
               fontWeight: activeTab === t ? 700 : 400,
               borderBottom: activeTab === t ? "1px solid #7080BB" : "1px solid transparent",
@@ -135,22 +135,22 @@ export function MarketLighthouse({
       </div>
 
       {/* Stats row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "10px" }}>
-        <StatBlock icon="ℓ" label="Total Trades" value={fNum(data?.totalTrades || 0)} change={data?.tradesChange || 0} />
-        <StatBlock icon="♁" label="Traders" value={fNum(data?.uniqueTraders || 0)} change={data?.tradersChange || 0} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: sz.gap, marginBottom: compact ? "6px" : "10px" }}>
+        <StatBlock icon="ℓ" label="Total Trades" value={fNum(data?.totalTrades || 0)} change={data?.tradesChange || 0} compact={compact} />
+        <StatBlock icon="♁" label="Traders" value={fNum(data?.uniqueTraders || 0)} change={data?.tradersChange || 0} compact={compact} />
       </div>
 
       {/* 24h Vol */}
-      <div style={{ marginBottom: "10px" }}>
+      <div style={{ marginBottom: compact ? "6px" : "10px" }}>
         <div style={{ ...S.row, justifyContent: "space-between", marginBottom: "4px" }}>
           <div style={{ ...S.row, gap: "6px" }}>
-            <span style={{ fontSize: "13px", color: muted }}>24h Vol</span>
-            <span style={{ fontSize: "20px", fontWeight: 700 }}>{fUsd(totalVol)}</span>
+            <span style={{ fontSize: sz.fs.label, color: muted }}>24h Vol</span>
+            <span style={{ fontSize: sz.fs.val, fontWeight: 700 }}>{fUsd(totalVol)}</span>
           </div>
-          <span style={{ fontSize: "12px", color: volChange >= 0 ? g : r }}>{fPct(volChange)}</span>
+          <span style={{ fontSize: sz.fs.change, color: volChange >= 0 ? g : r }}>{fPct(volChange)}</span>
         </div>
         {total > 0 ? (
-          <div style={{ display: "flex", height: "18px", borderRadius: "3px", overflow: "hidden", fontSize: "10px" }}>
+          <div style={{ display: "flex", height: sz.barH, borderRadius: "3px", overflow: "hidden", fontSize: sz.fs.bar }}>
             <div style={{
               flex: `${buyPct}%`,
               background: "linear-gradient(90deg,#00FFAA,#004D2E)",
@@ -165,39 +165,39 @@ export function MarketLighthouse({
             }}>{fNum(sellCount)} / {fUsd(sellVolUsd)}</div>
           </div>
         ) : (
-          <div style={{ height: "18px", borderRadius: "3px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: "10px", color: dim }}>No platform trades yet</span>
+          <div style={{ height: sz.barH, borderRadius: "3px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: sz.fs.bar, color: dim }}>No platform trades yet</span>
           </div>
         )}
       </div>
 
       {/* Token Stats */}
-      <div style={{ marginBottom: "10px" }}>
-        <div style={{ ...S.row, ...S.gap4, marginBottom: "6px" }}>
-          <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#fff", display: "inline-block" }} />
-          <span style={{ fontSize: "13px", fontWeight: 500 }}>Token Stats</span>
+      <div style={{ marginBottom: compact ? "6px" : "10px" }}>
+        <div style={{ ...S.row, ...S.gap4, marginBottom: compact ? "4px" : "6px" }}>
+          <span style={{ width: compact ? "4px" : "5px", height: compact ? "4px" : "5px", borderRadius: "50%", background: "#fff", display: "inline-block" }} />
+          <span style={{ fontSize: sz.fs.section, fontWeight: 500 }}>Token Stats</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-          <MiniStat icon="◆" iconColor={purple} label="Created" value={fNum(data?.tokensCreated || 0)} change={data?.createdChange || 0} />
-          <MiniStat icon="🔗" iconColor={purple} label="Migrations" value={fNum(data?.migrations || 0)} change={data?.graduatedChange || 0} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: sz.gap }}>
+          <MiniStat icon="◆" iconColor={purple} label="Created" value={fNum(data?.tokensCreated || 0)} change={data?.createdChange || 0} compact={compact} />
+          <MiniStat icon="🔗" iconColor={purple} label="Migrations" value={fNum(data?.migrations || 0)} change={data?.graduatedChange || 0} compact={compact} />
         </div>
       </div>
 
       {/* Top Launchpads */}
-      <div style={{ marginBottom: "10px" }}>
-        <div style={{ ...S.row, justifyContent: "space-between", marginBottom: "6px" }}>
-          <span style={{ fontSize: "13px", fontWeight: 500 }}>Top Launchpads</span>
+      <div style={{ marginBottom: compact ? "6px" : "10px" }}>
+        <div style={{ ...S.row, justifyContent: "space-between", marginBottom: compact ? "4px" : "6px" }}>
+          <span style={{ fontSize: sz.fs.section, fontWeight: 500 }}>Top Launchpads</span>
           <button onClick={handleRefreshAll} style={{ background: "none", border: "none", cursor: "pointer", padding: "1px", display: "flex", color: dim }}>
             <RefreshCw style={{ width: "12px", height: "12px", transition: "transform 0.6s", transform: refreshing ? "rotate(360deg)" : "none" }} />
           </button>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: compact ? "4px" : "6px" }}>
           {(data?.topLaunchpads || []).length > 0 ? (
             data!.topLaunchpads.map((lp, i) => (
-              <IconCard key={i} icon={LAUNCHPAD_ICONS[lp.type] || pumpfunPill} label={lp.type} value={fUsd(lp.vol24hUsd)} />
+              <IconCard key={i} icon={LAUNCHPAD_ICONS[lp.type] || pumpfunPill} label={lp.type} value={fUsd(lp.vol24hUsd)} compact={compact} />
             ))
           ) : (
-            <div style={{ gridColumn: "1/-1", textAlign: "center", fontSize: "11px", color: dim, padding: "6px" }}>
+            <div style={{ gridColumn: "1/-1", textAlign: "center", fontSize: sz.fs.bar, color: dim, padding: "4px" }}>
               {isLoading ? "Loading..." : "No data"}
             </div>
           )}
@@ -206,19 +206,19 @@ export function MarketLighthouse({
 
       {/* Top Protocols */}
       <div>
-        <div style={{ ...S.row, justifyContent: "space-between", marginBottom: "6px" }}>
-          <span style={{ fontSize: "13px", fontWeight: 500 }}>Top Protocols</span>
-          <span style={{ fontSize: "10px", color: dim }}>
+        <div style={{ ...S.row, justifyContent: "space-between", marginBottom: compact ? "4px" : "6px" }}>
+          <span style={{ fontSize: sz.fs.section, fontWeight: 500 }}>Top Protocols</span>
+          <span style={{ fontSize: sz.fs.cardLabel, color: dim }}>
             {data?.updatedAt ? `${Math.round((Date.now() - new Date(data.updatedAt).getTime()) / 60000)}m ago` : ""}
           </span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: compact ? "4px" : "6px" }}>
           {(data?.topProtocols || []).length > 0 ? (
             data!.topProtocols.map((p, i) => (
-              <IconCard key={i} icon={PROTOCOL_ICONS[p.name] || raydiumIcon} label={p.name} value={fUsd(p.vol24hUsd)} change={p.change} />
+              <IconCard key={i} icon={PROTOCOL_ICONS[p.name] || raydiumIcon} label={p.name} value={fUsd(p.vol24hUsd)} change={p.change} compact={compact} />
             ))
           ) : (
-            <div style={{ gridColumn: "1/-1", textAlign: "center", fontSize: "11px", color: dim, padding: "6px" }}>
+            <div style={{ gridColumn: "1/-1", textAlign: "center", fontSize: sz.fs.bar, color: dim, padding: "4px" }}>
               {isLoading ? "Loading..." : "No data"}
             </div>
           )}
