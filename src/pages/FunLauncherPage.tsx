@@ -271,6 +271,11 @@ export default function FunLauncherPage() {
               <KingOfTheHill />
             </div>
 
+            {/* Trading Agents */}
+            <div className="px-4 pt-4">
+              <TradingAgentsShowcase />
+            </div>
+
             {/* Trending / Just Launched horizontal scroll */}
             <div className="px-4 pt-4">
               <div className="flex items-center gap-2 mb-2.5">
