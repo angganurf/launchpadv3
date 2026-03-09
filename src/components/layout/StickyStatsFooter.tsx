@@ -193,7 +193,15 @@ export function StickyStatsFooter() {
         {/* Connection + Launchpads + Region */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
           {/* Connection */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "4px 12px",
+            borderRadius: "999px",
+            background: isOnline ? "hsla(152, 60%, 18%, 0.6)" : "hsla(0, 60%, 18%, 0.6)",
+            border: `1px solid ${isOnline ? "hsla(152, 50%, 30%, 0.5)" : "hsla(0, 50%, 30%, 0.5)"}`,
+          }}>
             <span
               className={isOnline ? "pulse-dot" : ""}
               style={{
@@ -201,17 +209,18 @@ export function StickyStatsFooter() {
                 width: "8px",
                 height: "8px",
                 borderRadius: "50%",
-                backgroundColor: isOnline ? "hsl(var(--primary))" : "hsl(var(--destructive))",
+                backgroundColor: isOnline ? "hsl(152, 60%, 45%)" : "hsl(0, 84%, 60%)",
+                flexShrink: 0,
               }}
             />
             <span style={{
               fontFamily: "'IBM Plex Mono', monospace",
               fontSize: "11px",
               fontWeight: 500,
-              color: isOnline ? "hsl(var(--primary))" : "hsl(var(--destructive))",
+              color: isOnline ? "hsl(152, 50%, 55%)" : "hsl(0, 70%, 60%)",
               whiteSpace: "nowrap",
             }}>
-              {isOnline ? "Connected" : "Offline"}
+              {isOnline ? "Connection is stable" : "Connection lost"}
             </span>
           </div>
 
