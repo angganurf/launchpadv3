@@ -17,7 +17,7 @@ export default function XTrackerPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              {!isMobile && <Radar className="w-6 h-6 text-primary" />}
+              <Radar className="w-6 h-6 text-primary" />
               <div>
                 <h1 className="text-xl font-bold text-foreground">X Tracker</h1>
                 <p className="text-xs text-muted-foreground">
@@ -80,7 +80,6 @@ export default function XTrackerPage() {
             </div>
           )}
         </div>
-      </div>
     </LaunchpadLayout>
   );
 }
