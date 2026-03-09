@@ -269,8 +269,9 @@ export function StickyStatsFooter() {
               <div style={{
                 position: isMobile ? "fixed" : "absolute",
                 bottom: isMobile ? "48px" : "calc(100% + 8px)",
-                right: isMobile ? "8px" : 0,
-                left: isMobile ? "8px" : undefined,
+                right: isMobile ? undefined : 0,
+                left: isMobile ? "50%" : undefined,
+                transform: isMobile ? "translateX(-50%)" : undefined,
                 zIndex: 100000,
               }}>
                 <MarketLighthouse onRefresh={handleLpRefresh} refreshing={lpRefreshing} compact={isMobile} />
