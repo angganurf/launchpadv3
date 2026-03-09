@@ -228,50 +228,50 @@ export function MarketLighthouse({
   );
 }
 
-function StatBlock({ icon, label, value, change }: { icon: string; label: string; value: string; change: number }) {
+function StatBlock({ icon, label, value, change, compact }: { icon: string; label: string; value: string; change: number; compact?: boolean }) {
   return (
     <div style={{ ...S.col, gap: "2px" }}>
-      <div style={{ ...S.row, gap: "5px" }}>
-        <span style={{ fontSize: "16px" }}>{icon}</span>
-        <span style={{ fontSize: "12px", color: muted }}>{label}</span>
+      <div style={{ ...S.row, gap: compact ? "3px" : "5px" }}>
+        <span style={{ fontSize: compact ? "12px" : "16px" }}>{icon}</span>
+        <span style={{ fontSize: compact ? "9px" : "12px", color: muted }}>{label}</span>
       </div>
-      <span style={{ fontSize: "18px", fontWeight: 700 }}>{value}</span>
-      <span style={{ fontSize: "12px", color: change >= 0 ? g : r }}>{fPct(change)}</span>
+      <span style={{ fontSize: compact ? "13px" : "18px", fontWeight: 700 }}>{value}</span>
+      <span style={{ fontSize: compact ? "9px" : "12px", color: change >= 0 ? g : r }}>{fPct(change)}</span>
     </div>
   );
 }
 
-function MiniStat({ icon, iconColor, label, value, change }: { icon: string; iconColor: string; label: string; value: string; change: number }) {
+function MiniStat({ icon, iconColor, label, value, change, compact }: { icon: string; iconColor: string; label: string; value: string; change: number; compact?: boolean }) {
   return (
     <div style={{ ...S.col, gap: "2px" }}>
-      <div style={{ ...S.row, gap: "4px" }}>
-        <span style={{ fontSize: "14px", color: iconColor }}>{icon}</span>
-        <span style={{ fontSize: "11px", color: muted }}>{label}</span>
+      <div style={{ ...S.row, gap: compact ? "3px" : "4px" }}>
+        <span style={{ fontSize: compact ? "10px" : "14px", color: iconColor }}>{icon}</span>
+        <span style={{ fontSize: compact ? "9px" : "11px", color: muted }}>{label}</span>
       </div>
-      <span style={{ fontSize: "15px", fontWeight: 700 }}>{value}</span>
-      <span style={{ fontSize: "11px", color: change >= 0 ? g : r }}>{fPct(change)}</span>
+      <span style={{ fontSize: compact ? "12px" : "15px", fontWeight: 700 }}>{value}</span>
+      <span style={{ fontSize: compact ? "9px" : "11px", color: change >= 0 ? g : r }}>{fPct(change)}</span>
     </div>
   );
 }
 
-function IconCard({ icon, label, value, change }: { icon: string; label: string; value: string; change?: number }) {
+function IconCard({ icon, label, value, change, compact }: { icon: string; label: string; value: string; change?: number; compact?: boolean }) {
   return (
     <div style={{
       background: cardBg,
-      borderRadius: "8px",
+      borderRadius: compact ? "6px" : "8px",
       border: "1px solid #2a2a2a",
-      padding: "8px 6px",
+      padding: compact ? "5px 4px" : "8px 6px",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
-      gap: "3px",
+      gap: compact ? "2px" : "3px",
     }}>
-      <img src={icon} alt={label} style={{ width: "24px", height: "24px", borderRadius: "5px", objectFit: "cover" }} />
-      <span style={{ fontSize: "13px", fontWeight: 700 }}>{value}</span>
+      <img src={icon} alt={label} style={{ width: compact ? "18px" : "24px", height: compact ? "18px" : "24px", borderRadius: compact ? "4px" : "5px", objectFit: "cover" }} />
+      <span style={{ fontSize: compact ? "10px" : "13px", fontWeight: 700 }}>{value}</span>
       {change !== undefined && (
-        <span style={{ fontSize: "10px", color: change >= 0 ? g : r, fontWeight: 500 }}>{fPct(change)}</span>
+        <span style={{ fontSize: compact ? "8px" : "10px", color: change >= 0 ? g : r, fontWeight: 500 }}>{fPct(change)}</span>
       )}
-      <span style={{ fontSize: "9px", color: dim }}>{label}</span>
+      <span style={{ fontSize: compact ? "7px" : "9px", color: dim }}>{label}</span>
     </div>
   );
 }
