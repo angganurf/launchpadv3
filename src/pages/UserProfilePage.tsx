@@ -21,7 +21,8 @@ export default function UserProfilePage() {
   const [copied, setCopied] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const isOwnProfile = profileId && profile?.id === profileId;
+  const isOwnProfile = profileId && profile?.id === profileId && profile?.isRegistered !== false;
+  const isRegistered = profile?.isRegistered !== false;
   const queryClient = useQueryClient();
 
   const copyWallet = () => {
@@ -84,6 +85,11 @@ export default function UserProfilePage() {
                 {profile.verified_type && (
                   <VerifiedBadge type={profile.verified_type === "gold" ? "gold" : "blue"} className="w-4 h-4 shrink-0" />
                 )}
+                {!isRegistered && (
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full border border-border/40">
+                    Global Wallet
+                  </span>
+                )}
               </div>
               {profile.username && (
                 <p className="text-muted-foreground text-sm font-mono">@{profile.username}</p>
@@ -113,15 +119,7 @@ export default function UserProfilePage() {
             <p className="text-sm text-muted-foreground mb-4">{profile.bio}</p>
           )}
 
-          {isOwnProfile && !profile.verified_type && (
-            <button
-              onClick={() => setVerifyOpen(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#c8ff00] hover:text-[#d9ff33] transition-colors bg-[#c8ff00]/10 px-3 py-1.5 rounded-lg border border-[#c8ff00]/20 mb-3"
-            >
-              <BadgeCheck className="w-3.5 h-3.5" />
-              Verify Account
-            </button>
-          )}
+          {isOwnProfile && isRegistered && !profile.verified_type && (
 
           <EditProfileModal
             open={editOpen}
