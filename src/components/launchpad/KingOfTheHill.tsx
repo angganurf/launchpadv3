@@ -440,7 +440,7 @@ function KingCardSkeleton() {
 /* ── export ── */
 export function KingOfTheHill() {
   const { tokens, isLoading } = useKingOfTheHill();
-  const { onlineCount } = useVisitorTracking();
+  // onlineCount removed — single indicator now lives in FunLauncherPage
   const [quickBuyAmount] = useState(() => {
     try {
       const v = localStorage.getItem("pulse-quick-buy-amount");
