@@ -224,15 +224,15 @@ export default function FunLauncherPage() {
           <main className="flex-1">
 
             {/* Online indicator */}
-            <div className="px-4 pt-3 flex items-center gap-1.5">
+            <div className="px-4 pt-2 flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />
-              <span className="text-[11px] font-mono text-muted-foreground">
+              <span className="text-[10px] font-mono text-muted-foreground">
                 <span className="text-foreground font-semibold">{onlineCount ?? '—'}</span> online
               </span>
             </div>
 
-            {/* P1 P2 P3 Quick Buy Header Bar — global config for all token cards */}
-            <div className="px-4 pt-2">
+            {/* P1 P2 P3 Quick Buy Header Bar */}
+            <div className="px-4 pt-1.5">
               <div className="pulse-axiom-header mb-0" style={{ "--col-accent": "160 84% 39%" } as React.CSSProperties}>
                 <button className="pulse-axiom-qb" onClick={() => setEditingQb(!editingQb)}>
                   <Zap className="h-3 w-3 text-warning" />
@@ -265,8 +265,8 @@ export default function FunLauncherPage() {
               </div>
             </div>
 
-            {/* King of the Hill — premium glassmorphic cards */}
-            <div className="px-4 pt-4">
+            {/* King of the Hill */}
+            <div className="px-4 pt-2">
               <KingOfTheHill />
             </div>
 
