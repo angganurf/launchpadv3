@@ -45,10 +45,7 @@ export function LeverageTradePanel({ market, hasApiKey, onPlaceOrder, onChangeLe
   if (hasApiKey === false) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 p-4">
-        <p className="text-sm text-muted-foreground text-center">Connect your Aster DEX API key to start trading</p>
-        <button onClick={onConnectKey} className="btn-gradient-green px-4 py-2 rounded-sm text-xs font-bold">
-          Connect API Key
-        </button>
+        <p className="text-sm text-muted-foreground text-center">Aster DEX API not configured. Contact admin to set up trading credentials.</p>
       </div>
     );
   }
