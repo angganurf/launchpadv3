@@ -23,14 +23,11 @@ const REGIONS = [
 
 const LAUNCHPAD_CONFIG: Record<string, { label: string; icon: string; isLocal?: boolean }> = {
   pumpfun: { label: "Pump.fun", icon: pumpfunPill, isLocal: true },
-  pump: { label: "Pump.fun", icon: pumpfunPill, isLocal: true },
-  dbc: { label: "Meteora", icon: tunaLogo, isLocal: true },
+  bonk: { label: "Bonk", icon: "https://letsbonk.fun/favicon.ico" },
+  meteora: { label: "Meteora", icon: tunaLogo, isLocal: true },
   bags: { label: "Bags.fm", icon: "https://bags.fm/favicon.ico" },
-  bonk: { label: "Bonk", icon: "https://www.bonk.fun/favicon.ico" },
-  believe: { label: "Believe", icon: "https://believe.app/images/icons/icon.png" },
-  boop: { label: "Boop", icon: "https://boop.fun/images/brand.png" },
   moonshot: { label: "Moonshot", icon: "https://moonshot.money/favicon.ico" },
-  phantom: { label: "Phantom", icon: "https://phantom.com/favicon.ico" },
+  raydium: { label: "Raydium", icon: "https://raydium.io/favicon.ico" },
 };
 
 function getPingColor(ping: number): string {
