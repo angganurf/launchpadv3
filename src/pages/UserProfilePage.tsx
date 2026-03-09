@@ -367,8 +367,8 @@ export default function UserProfilePage() {
           onSaved={() => queryClient.invalidateQueries({ queryKey: ["user-profile", identifier] })}
         />
         <VerifyAccountModal open={verifyOpen} onOpenChange={setVerifyOpen} />
-      </main>
-    </div>
+      </div>
+    </LaunchpadLayout>
   );
 }
 
