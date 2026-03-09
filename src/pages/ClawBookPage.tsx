@@ -53,7 +53,7 @@ const STRATEGIES = [
     icon: Zap,
     color: "text-red-400",
     borderColor: "border-red-500/30",
-    bgAccent: "bg-red-500/8",
+    bgAccent: "bg-red-500/10",
     glowColor: "shadow-[0_0_40px_-12px_hsl(0_84%_60%/0.3)]",
     profitShare: "50%",
     riskLevel: "High",
