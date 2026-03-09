@@ -1,10 +1,10 @@
 import { useParams, Link } from "react-router-dom";
 import defaultAvatar from "@/assets/default-avatar.png";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { LaunchpadLayout } from "@/components/layout/LaunchpadLayout";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, ExternalLink, Copy, CheckCircle, BadgeCheck, Menu, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, BarChart3 } from "lucide-react";
+import { Loader2, ExternalLink, Copy, CheckCircle, BadgeCheck, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, BarChart3 } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
@@ -26,7 +26,7 @@ export default function UserProfilePage() {
   const [copied, setCopied] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  
   const isOwnProfile = profileId && profile?.id === profileId && profile?.isRegistered !== false;
   const isRegistered = profile?.isRegistered !== false;
   const queryClient = useQueryClient();
@@ -41,24 +41,22 @@ export default function UserProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex bg-background">
-        <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
-        <main className={cn("flex-1 min-h-screen flex items-center justify-center", !isMobile && "ml-[48px]")}>
+      <LaunchpadLayout>
+        <div className="flex-1 min-h-[60vh] flex items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-        </main>
-      </div>
+        </div>
+      </LaunchpadLayout>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen flex bg-background">
-        <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
-        <main className={cn("flex-1 min-h-screen flex flex-col items-center justify-center gap-2", !isMobile && "ml-[48px]")}>
+      <LaunchpadLayout>
+        <div className="flex-1 min-h-[60vh] flex flex-col items-center justify-center gap-2">
           <p className="text-muted-foreground font-mono text-sm uppercase tracking-wider">Profile not found</p>
           <Link to="/" className="text-primary text-xs hover:underline">← Back home</Link>
-        </main>
-      </div>
+        </div>
+      </LaunchpadLayout>
     );
   }
 
@@ -70,21 +68,8 @@ export default function UserProfilePage() {
   const maxDistCount = Math.max(...tradingStats.pnlDistribution.map((d) => d.count), 1);
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
-
-      <main className={cn("flex-1 min-h-screen", !isMobile && "ml-[48px]")}>
-        {/* Mobile header */}
-        {isMobile && (
-          <div className="sticky top-0 z-30 flex items-center gap-3 px-4 py-3 bg-background/95 backdrop-blur-md border-b border-border">
-            <button onClick={() => setMobileOpen(true)}>
-              <Menu className="w-5 h-5 text-muted-foreground" />
-            </button>
-            <span className="text-sm font-bold text-foreground">Profile</span>
-          </div>
-        )}
-
-        {/* Cover Banner - Full width */}
+    <LaunchpadLayout noPadding>
+      <div>
         <div className="h-36 md:h-48 bg-gradient-to-r from-primary/20 via-primary/5 to-accent/20 relative overflow-hidden">
           {profile.cover_url && (
             <img src={profile.cover_url} alt="" className="w-full h-full object-cover absolute inset-0" />
@@ -382,8 +367,8 @@ export default function UserProfilePage() {
           onSaved={() => queryClient.invalidateQueries({ queryKey: ["user-profile", identifier] })}
         />
         <VerifyAccountModal open={verifyOpen} onOpenChange={setVerifyOpen} />
-      </main>
-    </div>
+      </div>
+    </LaunchpadLayout>
   );
 }
 
