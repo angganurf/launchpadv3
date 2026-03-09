@@ -142,7 +142,7 @@ export default function UserProfilePage() {
 
           {/* Stats Row */}
           <div className="grid grid-cols-4 gap-3 border border-border/30 rounded-lg p-3 bg-muted/20">
-            <StatBox label="COINS HELD" value="—" />
+            <StatBox label="COINS HELD" value={holdingsLoading ? "..." : walletHoldings.length.toString()} />
             <StatBox label="COINS CREATED" value={tokens.length.toString()} />
             <StatBox label="FOLLOWERS" value={(profile.followers_count || 0).toString()} />
             <StatBox label="FOLLOWING" value={(profile.following_count || 0).toString()} />
