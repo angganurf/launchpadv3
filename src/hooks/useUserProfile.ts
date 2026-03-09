@@ -17,6 +17,7 @@ export interface UserProfile {
   posts_count: number;
   created_at: string;
   solana_wallet_address: string | null;
+  isRegistered?: boolean;
 }
 
 export interface CreatedToken {
@@ -136,14 +137,32 @@ export function useUserProfile(identifier: string | undefined) {
 
       const { data, error } = await query.maybeSingle();
       if (error) throw error;
+      if (!data && isWalletAddress(identifier)) {
+        return {
+          id: identifier,
+          username: null,
+          display_name: null,
+          bio: null,
+          avatar_url: null,
+          cover_url: null,
+          website: null,
+          verified_type: null,
+          followers_count: 0,
+          following_count: 0,
+          posts_count: 0,
+          created_at: new Date().toISOString(),
+          solana_wallet_address: identifier,
+          isRegistered: false,
+        } as UserProfile;
+      }
       if (!data) throw new Error("Profile not found");
-      return data as UserProfile;
+      return { ...data, isRegistered: true } as UserProfile;
     },
     enabled: !!identifier,
   });
 
-  const wallet = profileQuery.data?.solana_wallet_address;
-  const profileId = profileQuery.data?.id;
+  const wallet = profileQuery.data?.solana_wallet_address || (identifier && isWalletAddress(identifier) ? identifier : undefined);
+  const profileId = profileQuery.data?.isRegistered ? profileQuery.data?.id : undefined;
 
   const tokensQuery = useQuery({
     queryKey: ["user-profile-tokens", wallet],
