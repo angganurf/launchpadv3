@@ -27,6 +27,7 @@ import { PromoteModal } from "@/components/launchpad/PromoteModal";
 import { CreateTokenModal } from "@/components/launchpad/CreateTokenModal";
 import { SniperStatusPanel } from "@/components/admin/SniperStatusPanel";
 import { TokenLauncher } from "@/components/launchpad/TokenLauncher";
+import { TradingAgentsShowcase } from "@/components/trading/TradingAgentsShowcase";
 import { Link, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -268,6 +269,11 @@ export default function FunLauncherPage() {
             {/* King of the Hill */}
             <div className="px-4 pt-2">
               <KingOfTheHill />
+            </div>
+
+            {/* Trading Agents */}
+            <div className="px-4 pt-4">
+              <TradingAgentsShowcase />
             </div>
 
             {/* Trending / Just Launched horizontal scroll */}
