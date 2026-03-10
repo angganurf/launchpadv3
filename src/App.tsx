@@ -52,7 +52,7 @@ const CompressedDistributePage = lazyWithRetry(() => import("./pages/CompressedD
 const DecompressPage = lazyWithRetry(() => import("./pages/DecompressPage"));
 const FunModePage = lazyWithRetry(() => import("./pages/FunModePage"));
 const AdminPanelPage = lazyWithRetry(() => import("./pages/AdminPanelPage"));
-// NFA pages removed
+
 const BannerMakerPage = lazyWithRetry(() => import("./pages/BannerMakerPage"));
 const AlphaTrackerPage = lazyWithRetry(() => import("./pages/AlphaTrackerPage"));
 const XTrackerPage = lazyWithRetry(() => import("./pages/XTrackerPage"));
