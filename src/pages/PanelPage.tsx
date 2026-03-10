@@ -147,7 +147,7 @@ export default function PanelPage() {
                 <PanelTab value="earnings" icon={<DollarSign className="h-3.5 w-3.5" />} label="Earnings" active={activeTab === "earnings"} />
                 
                 <PanelTab value="launches" icon={<Rocket className="h-3.5 w-3.5" />} label="Launches" active={activeTab === "launches"} />
-                <PanelTab value="wallets" icon={<Layers className="h-3.5 w-3.5" />} label="Wallets" active={activeTab === "wallets"} />
+                <PanelTab value="wallets" icon={<Wallet className="h-3.5 w-3.5" />} label="Wallet" active={activeTab === "wallets"} />
                 <PanelTab value="referrals" icon={<Users className="h-3.5 w-3.5" />} label="Referrals" active={activeTab === "referrals"} />
                 {isAdmin && <PanelTab value="phantom" icon={<Ghost className="h-3.5 w-3.5" />} label="Phantom" active={activeTab === "phantom"} />}
               </TabsList>
