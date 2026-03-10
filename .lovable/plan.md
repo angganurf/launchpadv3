@@ -1,48 +1,45 @@
 
 
-# Fix Privy Authorization Signature for Server-Send
+## Two Issues to Fix
 
-## Problem
-Privy now requires a `privy-authorization-signature` header on all wallet RPC calls (`/v1/wallets/{id}/rpc`). This is an ECDSA P-256 signature over a canonicalized JSON payload.
+### 1. Trade Success Toast -- Use the Same Radix Toast Style as Announcements
 
-## Step 1: Add the Secret
-I'll prompt you to enter your `PRIVY_AUTHORIZATION_KEY` (the `wallet-auth:...` private key you got from the Privy Dashboard).
+The trade success toast (line 133 in `TradePanelWithSwap.tsx`) already uses the Radix `useToast` system which renders through the styled `toast.tsx` component. The announcements, however, use **Sonner** (`toast()` from `sonner`), which has a completely different, simpler appearance.
 
-## Step 2: Update `supabase/functions/_shared/privy-server-wallet.ts`
+**Plan:** Migrate the announcement toasts in `useAnnouncements.ts` to use the Radix `useToast` system (from `@/hooks/use-toast`) so both announcements and trade success notifications share the same professional dark glass style. Since `useAnnouncements` is a hook, it can import the `toast` function from `use-toast.ts` directly.
 
-Based on the official Privy docs, I'll add:
+Alternatively (and more practically): the trade success toast already looks professional. The user likely wants both to look the same. The simplest approach is to ensure the trade toasts use the `variant: "success"` for the green styled variant already defined in `toast.tsx`.
 
-1. **RFC 8785 JSON canonicalization** — a simple recursive key-sorting function (no npm dependency needed in Deno)
-2. **`getAuthorizationSignature(url, body)`** function that:
-   - Builds the payload: `{ version: 1, method: "POST", url, body, headers: { "privy-app-id": appId } }`
-   - Canonicalizes it
-   - Strips the `wallet-auth:` prefix from the key
-   - Converts the base64 private key to PEM format
-   - Signs with ECDSA P-256 + SHA-256 using Deno's `crypto.subtle` (importing the PKCS8 key)
-   - Returns base64 signature
-3. **Update `signAndSendTransaction` and `signTransaction`** to include `"privy-authorization-signature"` header on the fetch call
+**Changes:**
+- `src/components/launchpad/TradePanelWithSwap.tsx`: Add `variant: "success"` to the trade success toast call (line 133).
 
-## Step 3: Deploy
-Redeploy `server-send` edge function.
+### 2. Alpha Tracker Shows No Trades from the Platform
 
-## Technical Detail: Signing Implementation (Deno/Web Crypto)
+The `alpha_trades` table is never populated by any code path. The `launchpad-swap` edge function records trades into `launchpad_transactions` but never inserts into `alpha_trades`. The Alpha Tracker feed reads exclusively from `alpha_trades`.
 
-```typescript
-// Strip prefix, convert to PKCS8 DER
-const privKeyBase64 = PRIVY_AUTHORIZATION_KEY.replace('wallet-auth:', '');
-const privKeyDer = Uint8Array.from(atob(privKeyBase64), c => c.charCodeAt(0));
+**Plan:** Add an insert into `alpha_trades` inside the `launchpad-swap` edge function after every successful trade recording (both in "record" mode and in the standard swap flow). This will populate the Alpha Tracker with platform trades in real-time.
 
-// Import as ECDSA P-256 key
-const key = await crypto.subtle.importKey(
-  "pkcs8", privKeyDer, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]
-);
+**Changes:**
+- `supabase/functions/launchpad-swap/index.ts`: After recording a transaction in `launchpad_transactions`, also insert a row into `alpha_trades` with the relevant fields (wallet_address, token_mint, token_name, token_ticker, trade_type, amount_sol, amount_tokens, price_usd, tx_hash, trader_display_name, trader_avatar_url). This needs to happen in both the "record" mode block (~line 161) and the standard swap block.
 
-// Sign canonicalized payload
-const sig = await crypto.subtle.sign(
-  { name: "ECDSA", hash: "SHA-256" }, key, payloadBytes
-);
-return btoa(String.fromCharCode(...new Uint8Array(sig)));
-```
+### Technical Details
 
-This matches the Privy docs exactly: ECDSA P-256 + SHA-256 over RFC 8785 canonicalized JSON, base64-encoded.
+**alpha_trades schema** (from types.ts):
+- `wallet_address`, `token_mint`, `token_name`, `token_ticker`, `trade_type`, `amount_sol`, `amount_tokens`, `price_usd`, `tx_hash`, `created_at`, `trader_display_name`, `trader_avatar_url`
+
+**Data available in launchpad-swap:**
+- `userWallet` -> `wallet_address`
+- `token.mint_address` -> `token_mint`  
+- `token.name` -> `token_name`
+- `token.ticker` -> `token_ticker`
+- `isBuy ? "buy" : "sell"` -> `trade_type`
+- `solAmount` -> `amount_sol`
+- `tokenAmount` -> `amount_tokens`
+- `newPrice` -> can derive `price_usd` (if SOL price available, otherwise null)
+- `clientSignature` / generated signature -> `tx_hash`
+- Profile lookup for display name/avatar
+
+**Files to modify:**
+1. `src/components/launchpad/TradePanelWithSwap.tsx` -- add `variant: "success"` to trade success toast
+2. `supabase/functions/launchpad-swap/index.ts` -- insert into `alpha_trades` after each successful trade
 
