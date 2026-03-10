@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
+import { getPrivyUser, findSolanaEmbeddedWallet } from "../_shared/privy-server-wallet.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -189,10 +190,23 @@ Deno.serve(async (req) => {
     const username = twitterUsername ?? email?.split("@")[0] ?? `user_${profileId.slice(-8)}`;
     const name = displayName ?? username;
 
+    // Fetch Privy wallet ID for server-side signing
+    let privyWalletId: string | null = null;
+    try {
+      const privyUser = await getPrivyUser(privyUserId);
+      const embeddedWallet = findSolanaEmbeddedWallet(privyUser);
+      if (embeddedWallet) {
+        privyWalletId = embeddedWallet.walletId;
+        console.log(`Resolved Privy wallet ID: ${privyWalletId} for user ${profileId}`);
+      }
+    } catch (e) {
+      console.warn(`Could not fetch Privy wallet ID: ${e instanceof Error ? e.message : e}`);
+    }
+
     // Check if profile exists
     const { data: existingProfile } = await supabase
       .from("profiles")
-      .select("id, solana_wallet_address")
+      .select("id, solana_wallet_address, privy_wallet_id")
       .eq("id", profileId)
       .maybeSingle();
 
@@ -204,6 +218,12 @@ Deno.serve(async (req) => {
         updates.solana_wallet_address = solanaWalletAddress;
       }
       if (avatarUrl) updates.avatar_url = avatarUrl;
+      if (privyWalletId && existingProfile.privy_wallet_id !== privyWalletId) {
+        updates.privy_wallet_id = privyWalletId;
+      }
+      if (!existingProfile.privy_did) {
+        updates.privy_did = privyUserId;
+      }
 
       if (Object.keys(updates).length > 0) {
         const { error: updateError } = await supabase
@@ -234,6 +254,8 @@ Deno.serve(async (req) => {
           display_name: name,
           avatar_url: avatarUrl,
           solana_wallet_address: solanaWalletAddress,
+          privy_wallet_id: privyWalletId,
+          privy_did: privyUserId,
         });
 
       if (insertError) {
