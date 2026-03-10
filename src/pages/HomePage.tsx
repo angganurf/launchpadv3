@@ -19,6 +19,7 @@ import saturnLogo from "@/assets/saturn-logo.png";
 const AlphaSection = lazy(() => import("@/components/home/AlphaSection"));
 const XTrackerSection = lazy(() => import("@/components/home/XTrackerSection"));
 const LeverageSection = lazy(() => import("@/components/home/LeverageSection"));
+const TradingAgentsShowcase = lazy(() => import("@/components/home/TradingAgentsShowcase"));
 
 /* ── Compact Pulse Token Row ── */
 function PulseTokenRow({ token }: { token: CodexPairToken }) {
@@ -172,6 +173,15 @@ export default function HomePage() {
             <PulseColumn title="🚀 Migrated" tokens={limitedGraduated} loading={codexLoading} />
           </div>
         </section>
+
+        {/* ═══ Trading Agents Showcase ═══ */}
+        <LazySection>
+          <section className="max-w-7xl mx-auto px-4 py-6">
+            <Suspense fallback={<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-48 rounded-xl" />)}</div>}>
+              <TradingAgentsShowcase />
+            </Suspense>
+          </section>
+        </LazySection>
 
         {/* ═══ Just Launched ═══ */}
         <section className="max-w-7xl mx-auto px-4 py-6">
