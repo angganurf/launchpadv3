@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Wallet, Briefcase, DollarSign, Rocket, Ghost, LogOut, Users, Copy, Check, ExternalLink } from "lucide-react";
+import { Wallet, Briefcase, DollarSign, Rocket, Ghost, LogOut, Users, Copy, Check, ExternalLink, Terminal } from "lucide-react";
 import saturnLogo from "@/assets/saturn-logo.png";
 import { copyToClipboard } from "@/lib/clipboard";
 
