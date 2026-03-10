@@ -420,3 +420,9 @@ verify_jwt = false
 
 [functions.scan-kol-tweets]
 verify_jwt = false
+
+[functions.fetch-token-metadata]
+verify_jwt = false
+
+[functions.fetch-wallet-transactions]
+verify_jwt = false
