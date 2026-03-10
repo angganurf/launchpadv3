@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { XLogo } from "@phosphor-icons/react";
+import { XIcon } from "@/components/icons/XIcon";
 
 export function Footer() {
   // Hide Claw footer entirely on punchlaunch.fun domain

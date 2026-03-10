@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendUp, TrendDown } from "@phosphor-icons/react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PriceData {

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Search, Plus, Menu } from "lucide-react";
-import { XLogo } from "@phosphor-icons/react";
+import { XIcon } from "@/components/icons/XIcon";
 import { useState, useEffect, useCallback } from "react";
 import { SolPriceDisplay } from "./SolPriceDisplay";
 import { EthPriceDisplay } from "./EthPriceDisplay";
