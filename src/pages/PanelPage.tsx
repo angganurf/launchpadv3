@@ -158,7 +158,7 @@ export default function PanelPage() {
                 <TabsContent value="earnings"><PanelEarningsTab /></TabsContent>
                 
                 <TabsContent value="launches"><PanelMyLaunchesTab /></TabsContent>
-                <TabsContent value="wallets"><WalletManagerPanel /></TabsContent>
+                <TabsContent value="wallets"><PanelWalletTab /></TabsContent>
                 <TabsContent value="referrals"><PanelReferralsTab /></TabsContent>
                 <TabsContent value="phantom"><PanelPhantomTab /></TabsContent>
               </Suspense>
