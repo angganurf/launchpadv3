@@ -359,9 +359,9 @@ export default function HomePage() {
           <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
 
           {/* Hero Content */}
-          <div className="relative z-10 w-full max-w-3xl mx-auto px-4 text-center">
+          <div className="relative z-10 w-full max-w-2xl lg:max-w-3xl mx-auto px-4 text-center">
             {/* Saturn Logo */}
-            <div className="relative mx-auto w-14 h-14 sm:w-16 sm:h-16 mb-4 animate-fade-in">
+            <div className="relative mx-auto w-12 h-12 sm:w-14 sm:h-14 mb-3 animate-fade-in">
               <div className="absolute inset-[-10px] rounded-full pointer-events-none"
                 style={{ background: "radial-gradient(circle, hsl(38 90% 50% / 0.2) 0%, transparent 70%)" }} />
               <img
