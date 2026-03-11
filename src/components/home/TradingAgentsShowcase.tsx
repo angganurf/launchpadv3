@@ -92,7 +92,7 @@ export default function TradingAgentsShowcase() {
             <div
               key={s.id}
               className={cn(
-                "group relative rounded-xl border backdrop-blur-sm p-5 transition-all duration-300",
+                "group relative rounded-xl border backdrop-blur-sm p-5 transition-all duration-300 h-full flex flex-col",
                 "bg-gradient-to-b to-card/40 hover:scale-[1.02]",
                 s.gradientFrom,
                 s.borderColor,
