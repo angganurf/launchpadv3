@@ -222,7 +222,7 @@ contract SaturnPortal {
 // ============================================================================
 // Solidity Compiler
 // ============================================================================
-async function compileTunaPortal(): Promise<{ abi: any[]; bytecode: `0x${string}` }> {
+async function compileSaturnPortal(): Promise<{ abi: any[]; bytecode: `0x${string}` }> {
   const t0 = Date.now();
   console.log("[Compile] Fetching Solidity compiler...");
 
