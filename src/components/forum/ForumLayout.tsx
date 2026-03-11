@@ -4,6 +4,7 @@ import { List, ChartBar, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetPortal, SheetOverlay, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
+import { BRAND } from "@/config/branding";
 
 interface ForumLayoutProps {
   leftSidebar?: ReactNode;

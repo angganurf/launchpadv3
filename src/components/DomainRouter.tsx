@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTrackReferral } from "@/hooks/useReferral";
+import { BRAND } from "@/config/branding";
 
 /**
  * Domain-based routing component

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { SaturnAdminLaunchPanel } from "@/components/saturn/SaturnAdminLaunchPanel";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { BRAND } from "@/config/branding";
 
 export default function SaturnAdminLaunchPage() {
   const [authorized, setAuthorized] = useState(false);

@@ -22,6 +22,7 @@ import {
 import { XLogo } from "@phosphor-icons/react";
 import { Footer } from "@/components/layout/Footer";
 import { MatrixContentCard } from "@/components/layout/MatrixContentCard";
+import { BRAND } from "@/config/branding";
 
 interface Position {
   title: string;

@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Play, ExternalLink, MessageCircle, Users, Clock, AlertTriangle, RefreshCw } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { InfluencerRunDebugCard, type ManualRunDebugState } from "@/components/admin/InfluencerRunDebugCard";
+import { BRAND } from "@/config/branding";
 
 interface PromoReply {
   id: string;

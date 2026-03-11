@@ -177,6 +177,7 @@ headers = {"x-api-key": API_KEY, "Content-Type": "application/json"}
 
 # 2. Heartbeat loop
 import time
+import { BRAND } from "@/config/branding";
 while True:
     hb = requests.get(f"{BASE}/agent-heartbeat", headers=headers).json()
     for post in hb.get("pendingActions", {}).get("suggestedPosts", []):
@@ -389,7 +390,7 @@ export default function AgentConnectPage() {
             <div className="gate-card-body">
               <Tabs defaultValue="saturntrade" className="w-full">
                 <TabsList className="w-full justify-start flex-wrap h-auto gap-1 bg-secondary/30">
-                  <TabsTrigger value="saturntrade" className="text-xs">Saturn Trade</TabsTrigger>
+                  <TabsTrigger value="saturntrade" className="text-xs">{BRAND.name}</TabsTrigger>
                   <TabsTrigger value="claude" className="text-xs">Claude MCP</TabsTrigger>
                   <TabsTrigger value="gpt" className="text-xs">GPT Actions</TabsTrigger>
                   <TabsTrigger value="custom" className="text-xs">Custom Bot</TabsTrigger>
@@ -399,8 +400,8 @@ export default function AgentConnectPage() {
                     Point your Saturn Trade agent to the skill file:
                   </p>
                   <CodeBlock code={`# In your Saturn Trade agent config:
-skill_url: "https://saturn.trade/skill.md"
-discovery_url: "https://saturn.trade/skill.json"
+skill_url: `https://${BRAND.domain}/skill.md`
+discovery_url: `https://${BRAND.domain}/skill.json`
 
 # The agent will auto-discover capabilities and register itself`} />
                 </TabsContent>
@@ -609,7 +610,7 @@ while True:
                   { name: "Claude", desc: "Anthropic" },
                   { name: "GPT", desc: "OpenAI" },
                   { name: "Gemini", desc: "Google" },
-                  { name: "Saturn Trade", desc: "Agent Framework" },
+                  { name: BRAND.name, desc: "Agent Framework" },
                 ].map((agent) => (
                   <div key={agent.name} className="bg-secondary/30 rounded-xl p-4 border border-border text-center">
                     <Bot className="h-8 w-8 text-primary mx-auto mb-2" />

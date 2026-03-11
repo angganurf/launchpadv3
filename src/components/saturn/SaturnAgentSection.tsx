@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Code, ArrowRight, FileText, Trophy } from "lucide-react";
+import { BRAND } from "@/config/branding";
 
 export function SaturnAgentSection() {
   return (

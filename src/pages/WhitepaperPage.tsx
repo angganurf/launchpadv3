@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { MatrixContentCard } from "@/components/layout/MatrixContentCard";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { useState } from "react";
+import { BRAND } from "@/config/branding";
 
 export default function WhitepaperPage() {
   const [mobileOpen, setMobileOpen] = useState(false);

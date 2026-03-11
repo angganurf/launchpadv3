@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock, Unlock, TrendingUp, Calendar, Clock, ExternalLink, RefreshCw, Download, Coins, BarChart3 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { BRAND } from "@/config/branding";
 
 interface PartnerDistribution {
   id: string;

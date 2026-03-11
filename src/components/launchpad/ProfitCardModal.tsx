@@ -6,6 +6,7 @@ import QRCode from "react-qr-code";
 import { useReferralCode } from "@/hooks/useReferral";
 import { useAuth } from "@/hooks/useAuth";
 import saturnLogo from "@/assets/saturn-logo.png";
+import { BRAND } from "@/config/branding";
 
 export interface ProfitCardData {
   action: "buy" | "sell";
@@ -104,7 +105,7 @@ export function ProfitCardModal({ open, onClose, data }: ProfitCardModalProps) {
             <div className="flex items-center justify-between px-5 pt-4 pb-2 relative z-10">
               <div className="flex items-center gap-2">
                 <img src={saturnLogo} alt="Saturn" className="w-6 h-6" />
-                <span className="text-[#c8ff00] font-bold text-sm tracking-[0.2em] uppercase">Saturn Trade</span>
+                <span className="text-[#c8ff00] font-bold text-sm tracking-[0.2em] uppercase">{BRAND.name}</span>
               </div>
               <span className="text-white/25 text-[10px] font-mono">{timeStr}</span>
             </div>

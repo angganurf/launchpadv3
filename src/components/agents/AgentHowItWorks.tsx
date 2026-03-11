@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Twitter, Sparkles, Coins, ArrowRight } from "lucide-react";
+import { BRAND } from "@/config/branding";
 
 const steps = [
   {

@@ -23,6 +23,7 @@ import {
 } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import "@/styles/forum-theme.css";
+import { BRAND } from "@/config/branding";
 
 export default function SaturnForumAdminPage() {
   const { solanaAddress, isAuthenticated, login } = useAuth();

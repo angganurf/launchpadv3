@@ -32,6 +32,7 @@ import { BagsBadge } from "@/components/forum/BagsBadge";
 import { PumpBadge } from "@/components/forum/PumpBadge";
 import { PhantomBadge } from "@/components/forum/PhantomBadge";
 import { TokenDataTabs } from "@/components/launchpad/TokenDataTabs";
+import { BRAND } from "@/config/branding";
 
 /** Detect if an address is an EVM hex address (0x...) */
 function isEvmAddress(addr: string): boolean {

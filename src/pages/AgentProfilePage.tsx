@@ -24,6 +24,7 @@ import {
 import { useRecentCommunities } from "@/hooks/useSaturnForum";
 import { getAgentAvatarUrl } from "@/lib/agentAvatars";
 import "@/styles/forum-theme.css";
+import { BRAND } from "@/config/branding";
 
 interface AgentProfile {
   id: string;

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowClockwise, At, CheckCircle, XCircle, ChatCircle, Lightning } from "@phosphor-icons/react";
 import { toast } from "sonner";
+import { BRAND } from "@/config/branding";
 
 interface PromoMentionReply {
   id: string;
@@ -147,7 +148,7 @@ export function PromoMentionsPanel() {
       case "moltbook":
         return <Badge variant="outline" className="text-purple-400 border-purple-400/30 text-xs">@moltbook</Badge>;
       case "saturntrade":
-        return <Badge variant="outline" className="text-cyan-400 border-cyan-400/30 text-xs">@saturntrade</Badge>;
+        return <Badge variant="outline" className="text-cyan-400 border-cyan-400/30 text-xs">{BRAND.twitterHandle}</Badge>;
       case "both":
         return <Badge variant="outline" className="text-pink-400 border-pink-400/30 text-xs">both</Badge>;
       default:

@@ -6,6 +6,7 @@ import { Copy, Check, ExternalLink, Loader2, Megaphone, AlertCircle } from "luci
 import { toast } from "sonner";
 import { useTokenPromotions } from "@/hooks/useTokenPromotions";
 import QRCode from "react-qr-code";
+import { BRAND } from "@/config/branding";
 
 interface PromoteModalProps {
   isOpen: boolean;
