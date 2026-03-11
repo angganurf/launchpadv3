@@ -242,8 +242,9 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
   const { data: rugCheck, isLoading: rugLoading } = useRugCheck(token.mint_address);
 
   const safetyChecks = [
-    { label: "ff Launched", passed: token.graduated !== false, loading: false },
-    { label: "Authority revoked", passed: rugCheck?.mintAuthorityRevoked ?? null, loading: rugLoading },
+    { label: "Launched", passed: token.graduated !== false, loading: false },
+    { label: "Mint authority revoked", passed: rugCheck?.mintAuthorityRevoked ?? null, loading: rugLoading },
+    { label: "Freeze authority revoked", passed: rugCheck?.freezeAuthorityRevoked ?? null, loading: rugLoading },
     { label: "Liquidity locked", passed: rugCheck?.liquidityLocked ?? null, loading: rugLoading },
     { label: "Top 10 < 30%", passed: rugCheck ? rugCheck.topHolderPct < 30 : null, loading: rugLoading },
   ];
@@ -430,7 +431,7 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 pt-2">
             {/* Safety Checks - horizontal grid */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               {safetyChecks.map((check) => (
                 <div key={check.label} className="flex flex-col items-center gap-1 py-2">
                   {check.loading ? (
@@ -512,28 +513,11 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
                   <span>Slippage</span>
                   <span className="text-foreground/70">{slippage}%</span>
                 </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Route</span>
-                  <span className="text-accent-foreground">
-                    {useJupiterRoute ? 'Jupiter' : jupiterQuoteFailed ? 'PumpPortal (fallback)' : 'PumpPortal'}
-                  </span>
-                </div>
               </div>
             )}
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Jupiter Link */}
-        <div className="text-center pt-0.5">
-          <a
-            href={`https://jup.ag/swap/SOL-${token.mint_address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] font-mono text-muted-foreground hover:text-accent-foreground inline-flex items-center gap-1 transition-colors"
-          >
-            Trade on Jupiter <ExternalLink className="h-2.5 w-2.5" />
-          </a>
-        </div>
       </div>
     </div>
       <ProfitCardModal

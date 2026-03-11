@@ -1,59 +1,45 @@
 
 
-## Issues Found & Plan
+## Two Issues to Fix
 
-After thorough investigation, here are all the issues and the fixes:
+### 1. Trade Success Toast -- Use the Same Radix Toast Style as Announcements
 
-### 1. Remove Jupiter link & text from trade panels
+The trade success toast (line 133 in `TradePanelWithSwap.tsx`) already uses the Radix `useToast` system which renders through the styled `toast.tsx` component. The announcements, however, use **Sonner** (`toast()` from `sonner`), which has a completely different, simpler appearance.
 
-**3 locations** reference Jupiter that need cleanup:
+**Plan:** Migrate the announcement toasts in `useAnnouncements.ts` to use the Radix `useToast` system (from `@/hooks/use-toast`) so both announcements and trade success notifications share the same professional dark glass style. Since `useAnnouncements` is a hook, it can import the `toast` function from `use-toast.ts` directly.
 
-- **`UniversalTradePanel.tsx` (lines 526-536)**: "Trade on Jupiter" link at bottom of the panel — remove entirely.
-- **`UniversalTradePanel.tsx` (line 518)**: Route display shows "Jupiter" or "PumpPortal (fallback)" — remove the Route row entirely (lines 515-520) since we don't want to expose routing internals.
-- **`TradePanelWithSwap.tsx` (lines 171-186)**: Graduated state shows "Trade on Jupiter" button and text — replace with the internal swap (or remove the external link, showing a neutral message).
-- **`TradePanel.tsx` (lines 103-120)**: Same graduated Jupiter redirect — remove.
+Alternatively (and more practically): the trade success toast already looks professional. The user likely wants both to look the same. The simplest approach is to ensure the trade toasts use the `variant: "success"` for the green styled variant already defined in `toast.tsx`.
 
-### 2. PNL Simulator visibility
+**Changes:**
+- `src/components/launchpad/TradePanelWithSwap.tsx`: Add `variant: "success"` to the trade success toast call (line 133).
 
-The `PnlSimulator` component exists (line 636 in `FunTokenDetailPage.tsx`) but is **only rendered on desktop layout** (line 963, inside `hidden lg:grid`). It's missing from:
-- **Phone layout** (mobile tab "comments" section)
-- **Tablet layout** (md to lg)
+### 2. Alpha Tracker Shows No Trades from the Platform
 
-**Fix**: Add `<PnlSimulator />` to mobile and tablet layouts.
+The `alpha_trades` table is never populated by any code path. The `launchpad-swap` edge function records trades into `launchpad_transactions` but never inserts into `alpha_trades`. The Alpha Tracker feed reads exclusively from `alpha_trades`.
 
-### 3. Route label ("Route via Jupiter/PumpPortal") removal
+**Plan:** Add an insert into `alpha_trades` inside the `launchpad-swap` edge function after every successful trade recording (both in "record" mode and in the standard swap flow). This will populate the Alpha Tracker with platform trades in real-time.
 
-Found at `UniversalTradePanel.tsx` lines 515-520. Will be removed as part of fix #1.
+**Changes:**
+- `supabase/functions/launchpad-swap/index.ts`: After recording a transaction in `launchpad_transactions`, also insert a row into `alpha_trades` with the relevant fields (wallet_address, token_mint, token_name, token_ticker, trade_type, amount_sol, amount_tokens, price_usd, tx_hash, trader_display_name, trader_avatar_url). This needs to happen in both the "record" mode block (~line 161) and the standard swap block.
 
-### 4. "ff Launched" typo → "Launched"
+### Technical Details
 
-Found in **two files**:
-- `UniversalTradePanel.tsx` line 245: `"ff Launched"` → `"Launched"`
-- `TradePanelWithSwap.tsx` line 193: `"ff Launched"` → `"Launched"`
+**alpha_trades schema** (from types.ts):
+- `wallet_address`, `token_mint`, `token_name`, `token_ticker`, `trade_type`, `amount_sol`, `amount_tokens`, `price_usd`, `tx_hash`, `created_at`, `trader_display_name`, `trader_avatar_url`
 
-### 5. Advanced settings safety checks — show all data
+**Data available in launchpad-swap:**
+- `userWallet` -> `wallet_address`
+- `token.mint_address` -> `token_mint`  
+- `token.name` -> `token_name`
+- `token.ticker` -> `token_ticker`
+- `isBuy ? "buy" : "sell"` -> `trade_type`
+- `solAmount` -> `amount_sol`
+- `tokenAmount` -> `amount_tokens`
+- `newPrice` -> can derive `price_usd` (if SOL price available, otherwise null)
+- `clientSignature` / generated signature -> `tx_hash`
+- Profile lookup for display name/avatar
 
-Currently showing 4 checks: "ff Launched", "Authority revoked", "Liquidity locked", "Top 10 < 30%".
-
-The rugcheck edge function already returns `freezeAuthorityRevoked` but it's not displayed. Update both panels to show:
-- **Launched** (graduation status)
-- **Mint Authority Revoked** (from RugCheck — rename "Authority revoked" for clarity)
-- **Freeze Authority Revoked** (new — from `rugCheck.freezeAuthorityRevoked`)
-- **Liquidity Locked** (from RugCheck, with percentage)
-- **Top 10 < 30%** (from RugCheck)
-
-Change grid from `grid-cols-4` to `grid-cols-5` to accommodate 5 checks, or keep `grid-cols-4` and wrap to 2 rows.
-
-### 6. Top 10 < 30% data accuracy
-
-This data is **real and accurate**. It comes from the **RugCheck.xyz API** (`api.rugcheck.xyz/v1/tokens/{mint}/report`), which scans on-chain holder data. The edge function (`rugcheck-report/index.ts`) extracts the top 10 holders' percentage from `raw.topHolders`. This is not from CoinCodex — it's direct on-chain analysis via RugCheck. No changes needed for accuracy, but we could add a tooltip indicating the data source.
-
-### Files to modify
-
-| File | Changes |
-|------|---------|
-| `src/components/launchpad/UniversalTradePanel.tsx` | Remove Jupiter link (lines 526-536), remove Route row (515-520), fix "ff Launched" → "Launched", add freeze authority check, update grid |
-| `src/components/launchpad/TradePanelWithSwap.tsx` | Fix "ff Launched" → "Launched", remove Jupiter graduated view, add freeze authority check, update grid |
-| `src/components/launchpad/TradePanel.tsx` | Remove Jupiter graduated view |
-| `src/pages/FunTokenDetailPage.tsx` | Add PnlSimulator to mobile and tablet layouts |
+**Files to modify:**
+1. `src/components/launchpad/TradePanelWithSwap.tsx` -- add `variant: "success"` to trade success toast
+2. `supabase/functions/launchpad-swap/index.ts` -- insert into `alpha_trades` after each successful trade
 

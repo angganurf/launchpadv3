@@ -174,14 +174,8 @@ export function TradePanelWithSwap({ token, userBalance = 0 }: TradePanelWithSwa
         <div className="text-4xl">🎓</div>
         <h3 className="font-bold text-sm font-mono uppercase tracking-widest">Token Graduated</h3>
         <p className="text-muted-foreground text-xs font-mono">
-          This token has graduated to the DEX. Trade on Jupiter or other DEX aggregators.
+          This token has graduated to the DEX and is now trading on-chain.
         </p>
-        <Button
-          className="w-full h-10 font-mono text-xs uppercase tracking-widest"
-          onClick={() => window.open(`https://jup.ag/swap/SOL-${token.mint_address}`, '_blank')}
-        >
-          Trade on Jupiter
-        </Button>
       </div>
     );
   }
@@ -190,8 +184,9 @@ export function TradePanelWithSwap({ token, userBalance = 0 }: TradePanelWithSwa
 
 
   const safetyChecks = [
-    { label: "ff Launched", passed: token.status === 'graduated', loading: false },
-    { label: "Authority revoked", passed: rugCheck?.mintAuthorityRevoked ?? null, loading: rugLoading },
+    { label: "Launched", passed: token.status === 'graduated', loading: false },
+    { label: "Mint authority revoked", passed: rugCheck?.mintAuthorityRevoked ?? null, loading: rugLoading },
+    { label: "Freeze authority revoked", passed: rugCheck?.freezeAuthorityRevoked ?? null, loading: rugLoading },
     { label: "Liquidity locked", passed: rugCheck?.liquidityLocked ?? null, loading: rugLoading },
     { label: "Top 10 < 30%", passed: rugCheck ? rugCheck.topHolderPct < 30 : null, loading: rugLoading },
   ];
@@ -374,7 +369,7 @@ export function TradePanelWithSwap({ token, userBalance = 0 }: TradePanelWithSwa
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 pt-2">
             {/* Safety Checks - horizontal grid */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
               {safetyChecks.map((check) => (
                 <div key={check.label} className="flex flex-col items-center gap-1 py-2">
                   {check.loading ? (
