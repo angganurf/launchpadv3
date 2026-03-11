@@ -102,8 +102,8 @@ function ExternalTokenView({ token, mintAddress, solPrice, isBsc = false }: { to
 
   return (
     <LaunchpadLayout>
-      <div className="trade-page-bg -m-4 p-2 md:p-3">
-        <div className="max-w-[1600px] mx-auto flex flex-col gap-2 pb-32 md:pb-24">
+      <div className="trade-page-bg -m-4 p-2.5 md:p-4">
+        <div className="max-w-[1600px] mx-auto flex flex-col gap-2.5 pb-32 md:pb-24">
 
           {/* TOP BAR */}
           <div className="trade-topbar overflow-hidden">
@@ -241,7 +241,7 @@ function ExternalTokenView({ token, mintAddress, solPrice, isBsc = false }: { to
             )}
             {mobileTab === 'chart' && (
               <>
-                <div className="trade-glass-panel overflow-hidden" style={{ backgroundColor: 'hsl(222 40% 3% / 0.8)' }}>
+                <div className="trade-glass-panel-glow trade-chart-wrapper overflow-hidden">
                   <CodexChart tokenAddress={mintAddress} height={340} />
                 </div>
                 <TokenDataTabs tokenAddress={mintAddress} holderCount={token.holders} userWallet={solanaAddress || undefined} userWallets={allWalletAddresses} currentPriceUsd={token.priceUsd || 0} />
@@ -252,7 +252,7 @@ function ExternalTokenView({ token, mintAddress, solPrice, isBsc = false }: { to
           {/* Tablet layout */}
           <div className="hidden md:grid lg:hidden grid-cols-12 gap-2">
             <div className="col-span-7 flex flex-col gap-2">
-              <div className="trade-glass-panel overflow-hidden" style={{ backgroundColor: 'hsl(222 40% 3% / 0.8)' }}>
+              <div className="trade-glass-panel-glow trade-chart-wrapper overflow-hidden">
                 <CodexChart tokenAddress={mintAddress} height={420} />
               </div>
               <TokenDataTabs tokenAddress={mintAddress} holderCount={token.holders} userWallet={solanaAddress || undefined} userWallets={allWalletAddresses} currentPriceUsd={token.priceUsd || 0} />
@@ -277,7 +277,7 @@ function ExternalTokenView({ token, mintAddress, solPrice, isBsc = false }: { to
           {/* Desktop layout */}
           <div className="hidden lg:grid grid-cols-12 gap-2 flex-1">
             <div className="col-span-9 flex flex-col gap-2">
-              <div className="trade-glass-panel overflow-hidden" style={{ backgroundColor: 'hsl(222 40% 3% / 0.8)' }}>
+              <div className="trade-glass-panel-glow trade-chart-wrapper overflow-hidden">
                 <CodexChart tokenAddress={mintAddress} height={380} />
               </div>
               <TokenDataTabs tokenAddress={mintAddress} holderCount={token.holders} userWallet={solanaAddress || undefined} userWallets={allWalletAddresses} currentPriceUsd={token.priceUsd || 0} />
@@ -551,7 +551,7 @@ export default function FunTokenDetailPage() {
   );
 
   const ChartSection = ({ chartHeight = 460 }: { chartHeight?: number }) => (
-    <div className="trade-glass-panel-glow overflow-hidden" style={{ backgroundColor: 'hsl(222 40% 3% / 0.8)' }}>
+    <div className="trade-glass-panel-glow trade-chart-wrapper overflow-hidden">
       <CodexChart tokenAddress={token.mint_address || mintAddress || ''} height={chartHeight} />
     </div>
   );
@@ -635,8 +635,8 @@ export default function FunTokenDetailPage() {
 
   return (
     <LaunchpadLayout>
-      <div className="trade-page-bg -m-4 p-2 md:p-3">
-        <div className="max-w-[1600px] mx-auto flex flex-col gap-2 pb-32 md:pb-24">
+      <div className="trade-page-bg -m-4 p-2.5 md:p-4">
+        <div className="max-w-[1600px] mx-auto flex flex-col gap-2.5 pb-32 md:pb-24">
 
           {/* ──── TOP BAR ──── */}
           <div className="trade-topbar overflow-hidden">
