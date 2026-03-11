@@ -4,18 +4,19 @@ import { LaunchpadLayout } from "@/components/layout/LaunchpadLayout";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, ExternalLink, Copy, CheckCircle, BadgeCheck, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, BarChart3 } from "lucide-react";
-import { useState } from "react";
+import { Loader2, ExternalLink, Copy, CheckCircle, BadgeCheck, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, BarChart3, Wallet } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { VerifiedBadge } from "@/components/ui/verified-badge";
 import { VerifyAccountModal } from "@/components/launchpad/VerifyAccountModal";
 import { EditProfileModal } from "@/components/profile/EditProfileModal";
 import { ProfilePositionsTab, ProfileActivityTab } from "@/components/profile/ProfileTradingTabs";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { formatSol, truncateWallet } from "@/lib/tradeUtils";
 import { useWalletHoldings } from "@/hooks/useWalletHoldings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export default function UserProfilePage() {
   const { identifier } = useParams<{ identifier: string }>();
@@ -23,6 +24,18 @@ export default function UserProfilePage() {
   const { profileId } = useAuth();
   const wallet = profile?.solana_wallet_address ?? (identifier && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(identifier) ? identifier : null);
   const { data: walletHoldings = [], isLoading: holdingsLoading } = useWalletHoldings(wallet);
+  const { data: solBalance } = useQuery({
+    queryKey: ["profile-sol-balance", wallet],
+    queryFn: async () => {
+      if (!wallet) return null;
+      const rpcUrl = import.meta.env.VITE_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+      const connection = new Connection(rpcUrl, "confirmed");
+      const lamports = await connection.getBalance(new PublicKey(wallet));
+      return lamports / LAMPORTS_PER_SOL;
+    },
+    enabled: !!wallet,
+    staleTime: 30_000,
+  });
   const [copied, setCopied] = useState(false);
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -167,17 +180,26 @@ export default function UserProfilePage() {
                 <span className="text-xs font-mono uppercase tracking-wider text-muted-foreground">Balance</span>
               </div>
               <div className="space-y-3">
-                <div>
-                  <p className="text-[10px] text-muted-foreground/60 font-mono uppercase">Total Bought</p>
-                  <p className="text-base font-bold font-mono text-foreground">{tradingStats.totalBuySol.toFixed(4)} SOL</p>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Wallet className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground/60 font-mono uppercase">SOL Balance</p>
+                    <p className="text-lg font-bold font-mono text-foreground">
+                      {solBalance !== null && solBalance !== undefined ? `${solBalance.toFixed(4)} SOL` : "—"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground/60 font-mono uppercase">Total Sold</p>
-                  <p className="text-base font-bold font-mono text-foreground">{tradingStats.totalSellSol.toFixed(4)} SOL</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground/60 font-mono uppercase">Unrealized</p>
-                  <p className="text-sm font-mono text-muted-foreground">—</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground/60 font-mono uppercase">Total Bought</p>
+                    <p className="text-sm font-bold font-mono text-foreground">{tradingStats.totalBuySol.toFixed(4)} SOL</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground/60 font-mono uppercase">Total Sold</p>
+                    <p className="text-sm font-bold font-mono text-foreground">{tradingStats.totalSellSol.toFixed(4)} SOL</p>
+                  </div>
                 </div>
               </div>
             </div>
