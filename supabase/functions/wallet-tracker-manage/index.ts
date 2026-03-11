@@ -42,7 +42,12 @@ async function syncHeliusWebhook(supabase: ReturnType<typeof createClient>) {
   const webhookSecret = Deno.env.get("HELIUS_WEBHOOK_SECRET") || "";
 
   try {
-    const updateBody: Record<string, unknown> = { accountAddresses, webhookURL };
+    const updateBody: Record<string, unknown> = {
+      accountAddresses,
+      webhookURL,
+      webhookType: "enhanced",
+      transactionTypes: ["ANY"],
+    };
     if (webhookSecret) {
       updateBody.authHeader = webhookSecret;
     }
@@ -140,6 +145,24 @@ Deno.serve(async (req) => {
         // Sync addresses to Helius after adding
         await syncHeliusWebhook(supabase);
 
+        // Trigger backfill of recent trades for this wallet
+        try {
+          const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+          const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+          const backfillRes = await fetch(`${supabaseUrl}/functions/v1/wallet-trade-backfill`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${serviceKey}`,
+            },
+            body: JSON.stringify({ wallet_address }),
+          });
+          const backfillResult = await backfillRes.json();
+          console.log(`Backfill result for ${wallet_address.slice(0, 8)}…:`, JSON.stringify(backfillResult));
+        } catch (bfErr) {
+          console.error("Backfill trigger failed:", bfErr);
+        }
+
         return new Response(JSON.stringify({ data }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -208,6 +231,53 @@ Deno.serve(async (req) => {
 
         if (error) throw error;
         return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "sync-webhook": {
+        await syncHeliusWebhook(supabase);
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "backfill": {
+        if (!wallet_address) {
+          return new Response(JSON.stringify({ error: "Missing wallet_address" }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+        const bfRes = await fetch(`${supabaseUrl}/functions/v1/wallet-trade-backfill`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${serviceKey}` },
+          body: JSON.stringify({ wallet_address }),
+        });
+        const bfResult = await bfRes.json();
+        return new Response(JSON.stringify(bfResult), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "check-webhook": {
+        const heliusApiKey = Deno.env.get("HELIUS_API_KEY");
+        const webhookId = Deno.env.get("HELIUS_WEBHOOK_ID");
+        if (!heliusApiKey || !webhookId) {
+          return new Response(JSON.stringify({ error: "Missing HELIUS_API_KEY or HELIUS_WEBHOOK_ID" }), {
+            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const whRes = await fetch(`https://api.helius.xyz/v0/webhooks/${webhookId}?api-key=${heliusApiKey}`);
+        const whData = await whRes.json();
+        return new Response(JSON.stringify({ 
+          webhookType: whData.webhookType,
+          accountAddressCount: whData.accountAddresses?.length,
+          accountAddresses: whData.accountAddresses?.slice(0, 10),
+          webhookURL: whData.webhookURL,
+          transactionTypes: whData.transactionTypes,
+        }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
