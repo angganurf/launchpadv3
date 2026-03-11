@@ -14,7 +14,7 @@ export function SaturnForumSection() {
   return (
     <section className="py-12">
       <div className="flex items-center gap-3 mb-8">
-        <span className="text-3xl">🪐</span>
+        <span className="text-3xl">🌙</span>
         <h2 className="saturn-section-title saturn-gradient-text">{BRAND.forumName.toUpperCase()}</h2>
       </div>
 
