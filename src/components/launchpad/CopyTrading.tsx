@@ -205,13 +205,14 @@ export const CopyTrading = forwardRef<HTMLDivElement, Record<string, never>>(fun
   };
 
   const toggleCopyTrading = async (id: string, enabled: boolean) => {
+    if (!profileId) return;
     try {
-      const { error } = await supabase
-        .from('tracked_wallets')
-        .update({ is_copy_trading_enabled: enabled })
-        .eq('id', id);
+      const { data: resp, error: fnError } = await supabase.functions.invoke('wallet-tracker-manage', {
+        body: { action: 'update', user_profile_id: profileId, wallet_id: id, updates: { is_copy_trading_enabled: enabled } },
+      });
 
-      if (error) throw error;
+      if (fnError) throw fnError;
+      if (resp?.error) throw new Error(resp.error);
       toast({ title: enabled ? "Copy trading enabled" : "Copy trading disabled" });
       queryClient.invalidateQueries({ queryKey: ['tracked-wallets'] });
     } catch (error) {
