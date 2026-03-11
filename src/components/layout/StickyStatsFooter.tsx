@@ -235,6 +235,43 @@ export function StickyStatsFooter() {
             )}
           </div>
 
+          {/* New Pairs */}
+          <div ref={npDropdownRef} style={{ position: "relative" }}>
+            <button
+              onClick={() => { setNewPairsOpen(!newPairsOpen); setWalletTrackerOpen(false); setRegionOpen(false); setLaunchpadOpen(false); }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                padding: "2px 7px",
+                borderRadius: "4px",
+                border: "1px solid rgba(200,255,0,0.15)",
+                background: newPairsOpen ? "rgba(200,255,0,0.12)" : "rgba(255,255,255,0.04)",
+                cursor: "pointer",
+                fontSize: "10px",
+                fontWeight: 500,
+                color: newPairsOpen ? "#c8ff00" : "rgba(255,255,255,0.6)",
+                whiteSpace: "nowrap",
+                transition: "all 0.15s",
+              }}
+            >
+              <Rocket style={{ width: "11px", height: "11px" }} />
+              <span>New Pairs</span>
+            </button>
+
+            {newPairsOpen && (
+              <div style={{
+                position: isMobile ? "fixed" : "absolute",
+                bottom: isMobile ? "44px" : "calc(100% + 6px)",
+                left: isMobile ? "50%" : 0,
+                transform: isMobile ? "translateX(-50%)" : undefined,
+                zIndex: 100000,
+              }}>
+                <NewPairsPanel onRefresh={handleNpRefresh} refreshing={npRefreshing} compact={isMobile} />
+              </div>
+            )}
+          </div>
+
           {/* Connection dot */}
           <div style={{
             display: "flex",
