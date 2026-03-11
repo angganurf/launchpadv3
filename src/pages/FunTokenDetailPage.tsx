@@ -168,19 +168,10 @@ function ExternalTokenView({ token, mintAddress, solPrice, isBsc = false }: { to
                   {token.twitterUrl && <a href={token.twitterUrl} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="icon" className="h-8 w-8 lg:h-7 lg:w-7 text-muted-foreground hover:text-foreground hover:bg-primary/5"><Twitter className="h-3.5 w-3.5 lg:h-3 lg:w-3" /></Button></a>}
                   <a href={getExplorerUrl(mintAddress, isBsc)} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="icon" className="h-8 w-8 lg:h-7 lg:w-7 text-muted-foreground hover:text-foreground hover:bg-primary/5"><ExternalLink className="h-3.5 w-3.5 lg:h-3 lg:w-3" /></Button></a>
                 </div>
-                <a href={getTradeUrl(mintAddress, isBsc)} target="_blank" rel="noopener noreferrer">
+                <a href={getExplorerUrl(mintAddress, isBsc)} target="_blank" rel="noopener noreferrer">
                   <Button size="sm" className="h-8 lg:h-7 px-2.5 text-[9px] font-mono gap-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg">
-                    {isBsc ? (
-                      <>
-                        <img src={pancakeswapBunny} alt="PancakeSwap" className="h-4 w-4 rounded-full object-cover flex-shrink-0" />
-                        <span className="hidden sm:inline">PancakeSwap</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
-                        <span className="hidden sm:inline">Axiom</span>
-                      </>
-                    )}
+                    <ExternalLink className="h-2.5 w-2.5" />
+                    <span className="hidden sm:inline">Explorer</span>
                   </Button>
                 </a>
               </div>
