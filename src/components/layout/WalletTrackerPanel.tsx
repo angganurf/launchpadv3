@@ -103,12 +103,16 @@ export function WalletTrackerPanel({
     if (!profileId || !newAddr.trim()) return;
     setAdding(true);
     try {
-      const { error } = await supabase.from("tracked_wallets").insert({
-        user_profile_id: profileId,
-        wallet_address: newAddr.trim(),
-        wallet_label: newLabel.trim() || null,
+      const { data: resp, error: fnError } = await supabase.functions.invoke("wallet-tracker-manage", {
+        body: {
+          action: "add",
+          user_profile_id: profileId,
+          wallet_address: newAddr.trim(),
+          wallet_label: newLabel.trim() || null,
+        },
       });
-      if (error) throw error;
+      if (fnError) throw fnError;
+      if (resp?.error) throw new Error(resp.error);
       setNewAddr("");
       setNewLabel("");
       setShowAddForm(false);
