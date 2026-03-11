@@ -137,8 +137,6 @@ const App = () => (
                      <Route path="/discover" element={<DiscoverPage />} />
                      <Route path="/profile/:identifier" element={<UserProfilePage />} />
                     <Route path="/investigate-token" element={<InvestigateTokenPage />} />
-                    <Route path="/api" element={<ApiDashboardPage />} />
-                    <Route path="/api/docs" element={<ApiDocsPage />} />
                     <Route path="/widget/:type" element={<WidgetPage />} />
                     <Route path="/agents" element={<ClawBookPage />} />
                     <Route path="/t/:ticker" element={<SubClawPage />} />
