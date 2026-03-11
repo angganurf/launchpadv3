@@ -4,7 +4,7 @@ import { Shield, Target, Zap, Bot, Wallet, TrendingUp } from "lucide-react";
 import { useSaturnTradingAgents, useSaturnTradingAgentLeaderboard } from "@/hooks/useSaturnTradingAgents";
 import { TradingAgentCard, TradingAgentCardSkeleton, FearGreedGauge } from "@/components/trading";
 
-export function MoonDexoTradingSection() {
+export function SaturnTradingSection() {
   const [selectedStrategy, setSelectedStrategy] = useState<string | undefined>();
   const [activeTab, setActiveTab] = useState<"active" | "funding" | "top">("active");
 

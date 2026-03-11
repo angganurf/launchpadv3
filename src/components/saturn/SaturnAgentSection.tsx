@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Code, ArrowRight, FileText, Trophy } from "lucide-react";
 import { BRAND } from "@/config/branding";
 
-export function MoonDexoAgentSection() {
+export function SaturnAgentSection() {
   return (
     <section className="mb-12">
       <h2 className="saturn-section-title saturn-gradient-text mb-6 flex items-center gap-3">

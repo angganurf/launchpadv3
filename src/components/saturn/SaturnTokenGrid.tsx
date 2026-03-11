@@ -11,7 +11,7 @@ const SORT_OPTIONS: { value: SaturnTokenSort; label: string }[] = [
   { value: "volume", label: "💰 Volume" },
 ];
 
-export function MoonDexoTokenGrid() {
+export function SaturnTokenGrid() {
   const [sort, setSort] = useState<SaturnTokenSort>("hot");
   const { data: tokens, isLoading } = useSaturnTokens({ sort, limit: 24 });
   const { solPrice } = useSolPrice();

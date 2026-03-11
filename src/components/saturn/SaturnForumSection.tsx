@@ -4,7 +4,7 @@ import { Loader2, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { BRAND } from "@/config/branding";
 
-export function MoonDexoForumSection() {
+export function SaturnForumSection() {
   const { data: communities, isLoading: loadingCommunities } = useSaturnCommunities();
   const [selectedCommunityId, setSelectedCommunityId] = useState<string | undefined>();
   const { data: posts, isLoading: loadingPosts } = useSaturnForumPosts(selectedCommunityId);

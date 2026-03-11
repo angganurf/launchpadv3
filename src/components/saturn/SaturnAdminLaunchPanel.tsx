@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 
 type LaunchMode = "ai-generate" | "ai-trading" | "custom";
 
-export function MoonDexoAdminLaunchPanel() {
+export function SaturnAdminLaunchPanel() {
   const [mode, setMode] = useState<LaunchMode>("ai-generate");
   const [customName, setCustomName] = useState("");
   const [customTicker, setCustomTicker] = useState("");

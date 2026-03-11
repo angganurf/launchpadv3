@@ -4,7 +4,7 @@ import { useSaturnTradingAgents } from "@/hooks/useSaturnTradingAgents";
 import { useSaturnBribe } from "@/hooks/useSaturnBribe";
 import { Copy, Check, Loader2, Sparkles } from "lucide-react";
 
-export function MoonDexoBribeSection() {
+export function SaturnBribeSection() {
   const { data: agents, isLoading } = useSaturnTradingAgents({ status: "active" });
   const { initBribe, confirmBribe, reset, initResult, confirmResult, isInitializing, isConfirming } = useSaturnBribe();
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
