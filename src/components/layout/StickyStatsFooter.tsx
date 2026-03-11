@@ -135,6 +135,12 @@ export function StickyStatsFooter() {
     setTimeout(() => setLpRefreshing(false), 600);
   };
 
+  const handleWtRefresh = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setWtRefreshing(true);
+    setTimeout(() => setWtRefreshing(false), 600);
+  };
+
   const isPunchDomain = typeof window !== "undefined" && (window.location.hostname === "punchlaunch.fun" || window.location.hostname === "www.punchlaunch.fun");
   if (pathname.startsWith("/punch") || pathname.startsWith("/punch-test") || isPunchDomain) return null;
 
