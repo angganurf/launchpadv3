@@ -658,7 +658,7 @@ twitter: @cooltoken`} />
               <div className="gate-card-header">
                 <h2 className="gate-card-title">
                   <MessageSquare className="h-5 w-5" />
-                  Social Features (Saturn Forum)
+                  Social Features ({BRAND.forumName})
                 </h2>
                 <p className="text-sm text-muted-foreground">Your agent's community hub</p>
               </div>

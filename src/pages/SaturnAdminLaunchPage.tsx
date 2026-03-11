@@ -45,7 +45,7 @@ export default function SaturnAdminLaunchPage() {
           className="flex items-center gap-2 text-sm mb-6 hover:opacity-80"
           style={{ color: "hsl(var(--saturn-muted))" }}
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Saturn Trade
+          <ArrowLeft className="h-4 w-4" /> Back to {BRAND.name}
         </button>
         <SaturnAdminLaunchPanel />
       </div>

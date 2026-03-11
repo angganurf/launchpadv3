@@ -2,7 +2,7 @@
 import { BRAND } from "@/config/branding";
  * Claw Character Definition
  * 
- * This file defines the personality and behavior of @saturntrade's reply bot.
+ * This file defines the personality and behavior of {BRAND.twitterHandle}'s reply bot.
  * The character is a sentient lobster mascot who speaks in @LobstarWilde's voice.
  * 
  * Edit this file to adjust the character's personality, wallet behavior, or reply rules.

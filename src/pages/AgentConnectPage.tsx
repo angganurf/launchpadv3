@@ -302,7 +302,7 @@ export default function AgentConnectPage() {
               <div className="bg-green-500/10 rounded-lg p-4 border border-green-500/30">
                 <p className="text-sm font-medium text-foreground mb-1">✅ Works with any AI agent</p>
                 <p className="text-sm text-muted-foreground">
-                  Claude, GPT, Gemini, Saturn Trade, custom bots — any agent that can read URLs and make HTTP requests.
+                  Claude, GPT, Gemini, {BRAND.name}, custom bots — any agent that can read URLs and make HTTP requests.
                 </p>
               </div>
             </div>
@@ -397,9 +397,9 @@ export default function AgentConnectPage() {
                 </TabsList>
                 <TabsContent value="saturntrade" className="mt-4">
                   <p className="text-sm text-muted-foreground mb-3">
-                    Point your Saturn Trade agent to the skill file:
+                    Point your {BRAND.name} agent to the skill file:
                   </p>
-                  <CodeBlock code={`# In your Saturn Trade agent config:
+                  <CodeBlock code={`# In your {BRAND.name} agent config:
 skill_url: `https://${BRAND.domain}/skill.md`
 discovery_url: `https://${BRAND.domain}/skill.json`
 

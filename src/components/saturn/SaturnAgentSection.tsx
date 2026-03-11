@@ -45,7 +45,7 @@ export function SaturnAgentSection() {
               narrative-driven decision engine enables organic, self-replicating ecosystem growth without manual intervention.
             </p>
             <p className="leading-relaxed mb-4" style={{ color: "hsl(var(--saturn-muted))" }}>
-              Revenue generated from agent sales is programmatically allocated to sustain and scale the Saturn Trade
+              Revenue generated from agent sales is programmatically allocated to sustain and scale the {BRAND.name}
               infrastructure. <span className="font-bold" style={{ color: "hsl(var(--saturn-primary))" }}>50%</span> of
               every agent sale is routed to an automated token buyback-and-burn mechanism, permanently reducing circulating
               supply and creating sustained deflationary pressure. The remaining 50% funds ongoing ecosystem development,

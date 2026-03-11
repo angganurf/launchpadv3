@@ -70,7 +70,7 @@ export default function WhitepaperPage() {
                   1. Platform Overview
                 </h2>
                 <p className="text-muted-foreground leading-relaxed mb-4">
-                  Saturn Trade is a high-performance trading terminal built for Solana. It combines <strong className="text-foreground">real-time market data</strong>, <strong className="text-foreground">AI-powered trading agents</strong>, and a <strong className="text-foreground">token launchpad</strong> into a single unified platform designed for speed and precision.
+                  {BRAND.name} is a high-performance trading terminal built for Solana. It combines <strong className="text-foreground">real-time market data</strong>, <strong className="text-foreground">AI-powered trading agents</strong>, and a <strong className="text-foreground">token launchpad</strong> into a single unified platform designed for speed and precision.
                 </p>
 
                 <h3 className="text-lg font-semibold text-foreground mt-6 mb-3">Core Features</h3>
@@ -186,7 +186,7 @@ x * y = k`}
                 </h2>
 
                 <p className="text-muted-foreground leading-relaxed mb-6">
-                  Saturn Trade implements a transparent fee model where trading fees route through the platform treasury for controlled redistribution.
+                  {BRAND.name} implements a transparent fee model where trading fees route through the platform treasury for controlled redistribution.
                 </p>
 
                 <div className="overflow-x-auto">
@@ -544,7 +544,7 @@ x * y = k`}
 
               {/* Document Footer */}
               <div className="text-center text-sm text-muted-foreground pt-8 border-t border-border">
-                <p>This documentation is a living document and will be updated as Saturn Trade evolves.</p>
+                <p>This documentation is a living document and will be updated as {BRAND.name} evolves.</p>
                 <p className="mt-2">© 2026 ${BRAND.name}. All rights reserved.</p>
               </div>
             </div>

@@ -290,7 +290,7 @@ export default function GovernancePage() {
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Share your ideas for Saturn Trade..."
+                placeholder={`Share your ideas for ${BRAND.name}...`}
                 className="bg-[#1a1a1f] border-[#2a2a2f] text-white resize-none min-h-[44px] max-h-[120px]"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {

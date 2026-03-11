@@ -14,7 +14,7 @@ export function MerchHeader({ cartCount, onCartOpen }: MerchHeaderProps) {
         <img src={saturnMerchLogo} alt={BRAND.name} className="w-10 h-10 object-contain" />
         <div>
           <h1 className="text-foreground font-bold text-xl sm:text-2xl">{BRAND.shortName} Merch</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm">Official Saturn Trade merchandise — pay with SOL</p>
+          <p className="text-muted-foreground text-xs sm:text-sm">Official {BRAND.name} merchandise — pay with SOL</p>
         </div>
       </div>
       <button onClick={onCartOpen} className="relative p-2 rounded-lg border border-border hover:border-primary/50 hover:bg-surface-hover/50 transition-all">

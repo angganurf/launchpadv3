@@ -400,7 +400,7 @@ export default function HomePage() {
                 animationFillMode: "both",
               }}
             >
-              Saturn Trade
+{BRAND.name}
             </h1>
 
             {/* Subtitle */}
