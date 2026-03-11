@@ -388,7 +388,7 @@ export default function HomePage() {
 
             {/* Subtitle */}
             <p
-              className="text-sm sm:text-base md:text-lg text-foreground/80 max-w-xl mx-auto mb-1.5 font-medium animate-fade-in"
+              className="text-xs sm:text-sm md:text-base text-foreground/80 max-w-lg mx-auto mb-1 font-medium animate-fade-in"
               style={{ animationDelay: "0.15s", animationFillMode: "both" }}
             >
               The fastest AI-powered trading terminal on Solana
