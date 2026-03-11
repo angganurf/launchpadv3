@@ -230,6 +230,13 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "sync-webhook": {
+        await syncHeliusWebhook(supabase);
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       case "backfill": {
         if (!wallet_address) {
           return new Response(JSON.stringify({ error: "Missing wallet_address" }), {
