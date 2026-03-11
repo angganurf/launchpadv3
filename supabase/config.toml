@@ -441,3 +441,6 @@ verify_jwt = false
 
 [functions.bnb-swap]
 verify_jwt = false
+
+[functions.wallet-trade-webhook]
+verify_jwt = false
