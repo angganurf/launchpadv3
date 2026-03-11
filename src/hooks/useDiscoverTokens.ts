@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useChain } from "@/contexts/ChainContext";
 
 export interface TrendingToken {
   rank: number;
@@ -17,16 +18,20 @@ export interface TrendingToken {
   socialLinks: { type: string; url: string }[];
 }
 
-async function fetchTrendingTokens(): Promise<TrendingToken[]> {
-  const { data, error } = await supabase.functions.invoke("dexscreener-trending");
+async function fetchTrendingTokens(chain: string): Promise<TrendingToken[]> {
+  const { data, error } = await supabase.functions.invoke("dexscreener-trending", {
+    body: { chain },
+  });
   if (error) throw error;
   return data as TrendingToken[];
 }
 
 export function useDiscoverTokens() {
+  const { chain } = useChain();
+
   return useQuery({
-    queryKey: ["discover-trending"],
-    queryFn: fetchTrendingTokens,
+    queryKey: ["discover-trending", chain],
+    queryFn: () => fetchTrendingTokens(chain),
     refetchInterval: 120_000,
     staleTime: 60_000,
   });

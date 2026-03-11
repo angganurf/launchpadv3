@@ -33,6 +33,14 @@ interface TrendingToken {
   socialLinks: { type: string; url: string }[];
 }
 
+// Map our chain IDs to DexScreener chain IDs
+const CHAIN_MAP: Record<string, string> = {
+  solana: 'solana',
+  bnb: 'bsc',
+  base: 'base',
+  ethereum: 'ethereum',
+};
+
 async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
   for (let i = 0; i <= retries; i++) {
     try {
@@ -53,22 +61,37 @@ serve(async (req) => {
   }
 
   try {
+    // Parse chain from request body or query params
+    let requestedChain = 'solana';
+    if (req.method === 'POST') {
+      try {
+        const body = await req.json();
+        if (body.chain) requestedChain = body.chain;
+      } catch {}
+    } else {
+      const url = new URL(req.url);
+      const chainParam = url.searchParams.get('chain');
+      if (chainParam) requestedChain = chainParam;
+    }
+
+    const dexChainId = CHAIN_MAP[requestedChain] || 'solana';
+
     // 1. Fetch top boosted tokens
     const boostRes = await fetchWithRetry('https://api.dexscreener.com/token-boosts/top/v1');
     const boostData: BoostToken[] = await boostRes.json();
 
-    // 2. Filter to Solana only, deduplicate by address, take top 50
+    // 2. Filter to requested chain, deduplicate by address, take top 50
     const seen = new Set<string>();
-    const solanaTokens: BoostToken[] = [];
+    const chainTokens: BoostToken[] = [];
     for (const t of boostData) {
-      if (t.chainId === 'solana' && !seen.has(t.tokenAddress)) {
+      if (t.chainId === dexChainId && !seen.has(t.tokenAddress)) {
         seen.add(t.tokenAddress);
-        solanaTokens.push(t);
-        if (solanaTokens.length >= 50) break;
+        chainTokens.push(t);
+        if (chainTokens.length >= 50) break;
       }
     }
 
-    if (solanaTokens.length === 0) {
+    if (chainTokens.length === 0) {
       return new Response(JSON.stringify([]), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -79,14 +102,14 @@ serve(async (req) => {
     const pairDataMap = new Map<string, any>();
 
     const chunks: string[][] = [];
-    for (let i = 0; i < solanaTokens.length; i += chunkSize) {
-      chunks.push(solanaTokens.slice(i, i + chunkSize).map(t => t.tokenAddress));
+    for (let i = 0; i < chainTokens.length; i += chunkSize) {
+      chunks.push(chainTokens.slice(i, i + chunkSize).map(t => t.tokenAddress));
     }
 
     await Promise.all(chunks.map(async (chunk) => {
       try {
         const addresses = chunk.join(',');
-        const pairRes = await fetchWithRetry(`https://api.dexscreener.com/tokens/v1/solana/${addresses}`);
+        const pairRes = await fetchWithRetry(`https://api.dexscreener.com/tokens/v1/${dexChainId}/${addresses}`);
         const pairs: any[] = await pairRes.json();
 
         if (Array.isArray(pairs)) {
@@ -103,7 +126,7 @@ serve(async (req) => {
     }));
 
     // 4. Merge and build response
-    const results: TrendingToken[] = solanaTokens.map((token, idx) => {
+    const results: TrendingToken[] = chainTokens.map((token, idx) => {
       const pair = pairDataMap.get(token.tokenAddress);
 
       const socialLinks: { type: string; url: string }[] = [];
