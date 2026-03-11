@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { OptimizedTokenImage } from "@/components/ui/OptimizedTokenImage";
 
 const g = "#00FFAA";
 const r = "#FF4D4D";
