@@ -44,8 +44,8 @@ const TAB_CONFIG = [
   
   { value: "follower-scan", label: "Followers", icon: Users },
   { value: "promo", label: "Promo/Influencer", icon: Shield },
-  { value: "clawbook", label: "Saturn Forum", icon: Shield },
-  { value: "claw-launch", label: "Saturn Launch", icon: Rocket },
+  { value: "forum", label: "Saturn Forum", icon: Shield },
+  { value: "saturn-launch", label: "Saturn Launch", icon: Rocket },
   { value: "partner-fees", label: "Partner Fees", icon: Wallet },
 ] as const;
 
@@ -178,13 +178,13 @@ export default function AdminPanelPage() {
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="clawbook" className="mt-6">
+          <TabsContent value="forum" className="mt-6">
             <Suspense fallback={<TabLoader />}>
               <SaturnForumAdminPage />
             </Suspense>
           </TabsContent>
 
-          <TabsContent value="claw-launch" className="mt-6">
+          <TabsContent value="saturn-launch" className="mt-6">
             <Suspense fallback={<TabLoader />}>
               <SaturnAdminLaunchPage />
             </Suspense>
