@@ -71,6 +71,14 @@ export default function FunLauncherPage() {
   const { chain, chainConfig, isSolana, isChainEnabled } = useChainRoute();
   const { setChain } = useChain();
   const [searchParams, setSearchParams] = useSearchParams();
+  const funNavigate = useNavigate();
+
+  // Redirect legacy ?create=1 to dedicated create page
+  useEffect(() => {
+    if (searchParams.get("create") === "1") {
+      funNavigate("/launchpad/create", { replace: true });
+    }
+  }, [searchParams, funNavigate]);
 
   const [claimsPage, setClaimsPage] = useState(1);
   const [creatorFeesPage, setCreatorFeesPage] = useState(1);
