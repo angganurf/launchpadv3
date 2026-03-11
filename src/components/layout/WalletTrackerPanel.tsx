@@ -577,6 +577,7 @@ interface WalletTrade {
   token_mint: string;
   token_name: string | null;
   token_ticker: string | null;
+  token_image_url: string | null;
   trade_type: string;
   sol_amount: number;
   token_amount: number;
