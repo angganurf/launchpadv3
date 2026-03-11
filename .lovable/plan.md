@@ -1,45 +1,36 @@
 
 
-## Two Issues to Fix
+## Plan: BNB Price Display & Balance When BNB Chain Selected
 
-### 1. Trade Success Toast -- Use the Same Radix Toast Style as Announcements
+### Problem
+When BNB chain is selected, the header still shows SOL price and SOL embedded wallet balance instead of BNB equivalents.
 
-The trade success toast (line 133 in `TradePanelWithSwap.tsx`) already uses the Radix `useToast` system which renders through the styled `toast.tsx` component. The announcements, however, use **Sonner** (`toast()` from `sonner`), which has a completely different, simpler appearance.
+### Changes
 
-**Plan:** Migrate the announcement toasts in `useAnnouncements.ts` to use the Radix `useToast` system (from `@/hooks/use-toast`) so both announcements and trade success notifications share the same professional dark glass style. Since `useAnnouncements` is a hook, it can import the `toast` function from `use-toast.ts` directly.
+**1. Create BNB price edge function** (`supabase/functions/bnb-price/index.ts`)
+- Clone the `base-eth-price` pattern but fetch BNB price from CoinGecko (`ids=binancecoin`) with Binance API fallback (`BNBUSDT`)
+- Returns `{ price, change24h }`
 
-Alternatively (and more practically): the trade success toast already looks professional. The user likely wants both to look the same. The simplest approach is to ensure the trade toasts use the `variant: "success"` for the green styled variant already defined in `toast.tsx`.
+**2. Create `BnbPriceDisplay` component** (`src/components/layout/BnbPriceDisplay.tsx`)
+- Same structure as `EthPriceDisplay` but calls `bnb-price` edge function
+- Uses BNB logo SVG (yellow circle) instead of ETH logo
+- Separate localStorage cache key `bnb_price_display_cache`
 
-**Changes:**
-- `src/components/launchpad/TradePanelWithSwap.tsx`: Add `variant: "success"` to the trade success toast call (line 133).
+**3. Update `AppHeader.tsx` price switching** (line ~99)
+- Change from `chain === 'base' ? <EthPriceDisplay /> : <SolPriceDisplay />` to a 3-way switch:
+  - `solana` → `SolPriceDisplay`
+  - `base` → `EthPriceDisplay`  
+  - `bnb` → `BnbPriceDisplay`
 
-### 2. Alpha Tracker Shows No Trades from the Platform
+**4. Update `HeaderWalletBalance.tsx` for BNB balance**
+- Import `useChain` to detect active chain
+- When chain is `bnb`:
+  - Fetch BNB balance using the BSC RPC (`https://bsc-dataseed.binance.org`) via `eth_getBalance` JSON-RPC call on the embedded wallet address
+  - Display balance as `X.XXX BNB` instead of `X.XXX SOL`
+  - Update copy toast to say "Send BNB to this address" instead of "Send SOL"
+- When chain is `solana`: keep existing SOL balance logic
 
-The `alpha_trades` table is never populated by any code path. The `launchpad-swap` edge function records trades into `launchpad_transactions` but never inserts into `alpha_trades`. The Alpha Tracker feed reads exclusively from `alpha_trades`.
-
-**Plan:** Add an insert into `alpha_trades` inside the `launchpad-swap` edge function after every successful trade recording (both in "record" mode and in the standard swap flow). This will populate the Alpha Tracker with platform trades in real-time.
-
-**Changes:**
-- `supabase/functions/launchpad-swap/index.ts`: After recording a transaction in `launchpad_transactions`, also insert a row into `alpha_trades` with the relevant fields (wallet_address, token_mint, token_name, token_ticker, trade_type, amount_sol, amount_tokens, price_usd, tx_hash, trader_display_name, trader_avatar_url). This needs to happen in both the "record" mode block (~line 161) and the standard swap block.
-
-### Technical Details
-
-**alpha_trades schema** (from types.ts):
-- `wallet_address`, `token_mint`, `token_name`, `token_ticker`, `trade_type`, `amount_sol`, `amount_tokens`, `price_usd`, `tx_hash`, `created_at`, `trader_display_name`, `trader_avatar_url`
-
-**Data available in launchpad-swap:**
-- `userWallet` -> `wallet_address`
-- `token.mint_address` -> `token_mint`  
-- `token.name` -> `token_name`
-- `token.ticker` -> `token_ticker`
-- `isBuy ? "buy" : "sell"` -> `trade_type`
-- `solAmount` -> `amount_sol`
-- `tokenAmount` -> `amount_tokens`
-- `newPrice` -> can derive `price_usd` (if SOL price available, otherwise null)
-- `clientSignature` / generated signature -> `tx_hash`
-- Profile lookup for display name/avatar
-
-**Files to modify:**
-1. `src/components/launchpad/TradePanelWithSwap.tsx` -- add `variant: "success"` to trade success toast
-2. `supabase/functions/launchpad-swap/index.ts` -- insert into `alpha_trades` after each successful trade
+### Technical Notes
+- The Privy embedded wallet address is a Solana address. For BNB chain balance, we'd need the user's EVM wallet address. Since Privy can provision both Solana and EVM embedded wallets, we'll need to access the EVM embedded wallet when BNB is selected.
+- If no EVM wallet exists yet, the balance section will show the Solana wallet info with a note, or we check if Privy's `useWallets` hook provides an EVM wallet.
 
