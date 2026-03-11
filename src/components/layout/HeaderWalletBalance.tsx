@@ -40,20 +40,53 @@ function HeaderWalletBalanceInner() {
   }, [embeddedAddress, settingsOpen]);
 
   useEffect(() => {
-    if (!embeddedAddress) return;
-    let cancelled = false;
-    const fetchBal = async () => {
-      try {
-        const bal = await getBalance();
-        if (!cancelled) setBalance(bal);
-      } catch (e) {
-        console.warn("Header balance fetch failed:", e);
+    if (chain === 'bnb') {
+      // Fetch BNB balance via BSC RPC for EVM wallet
+      if (!evmWallet.isConnected || !evmWallet.address) {
+        setBalance(null);
+        return;
       }
-    };
-    fetchBal();
-    const interval = setInterval(fetchBal, 30000);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, [embeddedAddress, getBalance]);
+      let cancelled = false;
+      const fetchBnbBal = async () => {
+        try {
+          const res = await fetch('https://bsc-dataseed.binance.org', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0', method: 'eth_getBalance',
+              params: [evmWallet.address, 'latest'], id: 1,
+            }),
+          });
+          const data = await res.json();
+          if (data?.result && !cancelled) {
+            const wei = BigInt(data.result);
+            const bnb = Number(wei) / 1e18;
+            setBalance(bnb);
+          }
+        } catch (e) {
+          console.warn("BNB balance fetch failed:", e);
+        }
+      };
+      fetchBnbBal();
+      const interval = setInterval(fetchBnbBal, 30000);
+      return () => { cancelled = true; clearInterval(interval); };
+    } else {
+      // SOL balance
+      if (!embeddedAddress) return;
+      let cancelled = false;
+      const fetchBal = async () => {
+        try {
+          const bal = await getBalance();
+          if (!cancelled) setBalance(bal);
+        } catch (e) {
+          console.warn("Header balance fetch failed:", e);
+        }
+      };
+      fetchBal();
+      const interval = setInterval(fetchBal, 30000);
+      return () => { cancelled = true; clearInterval(interval); };
+    }
+  }, [embeddedAddress, getBalance, chain, evmWallet.isConnected, evmWallet.address]);
 
   useEffect(() => {
     if (!menuOpen) return;
