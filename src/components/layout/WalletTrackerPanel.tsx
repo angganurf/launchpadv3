@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
-import { RefreshCw, Plus, Download, Upload, Trash2, Search, Wallet, Loader2, Maximize2, TrendingUp, TrendingDown, Eye, Activity, Bell, BellOff } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { RefreshCw, Plus, Download, Upload, Trash2, Search, Wallet, Loader2, Maximize2, TrendingUp, TrendingDown, Eye, Activity, Bell, BellOff, Info } from "lucide-react";
 import { useWalletTracker, TRACKER_TABS, type TrackerTab, shortAddr } from "@/hooks/useWalletTracker";
+import { useTradeSounds } from "@/hooks/useTradeSounds";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 const g = "#00FFAA";
 const r = "#FF4D4D";
@@ -32,13 +34,18 @@ export function WalletTrackerPanel({
     addWallet,
     removeWallet,
     removeAll,
+    toggleNotifications,
+    toggleCopyTrading,
   } = useWalletTracker();
+
+  const { playBuy, playSell } = useTradeSounds();
 
   const [activeTab, setActiveTab] = useState<TrackerTab>("All");
   const [search, setSearch] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [newAddr, setNewAddr] = useState("");
   const [newLabel, setNewLabel] = useState("");
+  const [showCopyTradeInfo, setShowCopyTradeInfo] = useState(false);
 
   const f = "'Inter','SF Pro Display',-apple-system,sans-serif";
 
@@ -51,6 +58,10 @@ export function WalletTrackerPanel({
     }
   };
 
+  const handleCopyTradeToggle = () => {
+    setShowCopyTradeInfo(true);
+  };
+
   const filtered = wallets.filter((w) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -59,6 +70,43 @@ export function WalletTrackerPanel({
       (w.wallet_label || "").toLowerCase().includes(q)
     );
   });
+
+  // Realtime subscription for trade notifications
+  const walletsRef = useRef(wallets);
+  walletsRef.current = wallets;
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('wallet-tracker-trades-panel')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'wallet_trades' },
+        (payload) => {
+          const trade = payload.new as any;
+          const trackedWallet = walletsRef.current.find(
+            (w) => w.wallet_address === trade.wallet_address && w.notifications_enabled
+          );
+          if (trackedWallet) {
+            if (trade.trade_type === 'buy') {
+              playBuy();
+            } else {
+              playSell();
+            }
+            const label = trackedWallet.wallet_label || shortAddr(trade.wallet_address);
+            const tokenLabel = trade.token_ticker || trade.token_name || shortAddr(trade.token_mint);
+            toast({
+              title: `${trade.trade_type === 'buy' ? '🟢 Buy' : '🔴 Sell'} — ${label}`,
+              description: `${Number(trade.sol_amount).toFixed(3)} SOL → ${tokenLabel}`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [playBuy, playSell]);
 
   const sz = compact
     ? { w: "300px", pad: "8px", fs: { h: "12px", tab: "9px", label: "9px", val: "10px", btn: "9px" }, gap: "4px" }
@@ -116,6 +164,34 @@ export function WalletTrackerPanel({
           ))}
         </div>
       </div>
+
+      {/* Copy Trade Info Box */}
+      {showCopyTradeInfo && (
+        <div
+          style={{
+            background: "rgba(0,255,170,0.08)",
+            border: "1px solid rgba(0,255,170,0.25)",
+            borderRadius: "8px",
+            padding: "10px 12px",
+            marginBottom: "8px",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "8px",
+          }}
+        >
+          <Info style={{ width: "14px", height: "14px", color: g, flexShrink: 0, marginTop: "1px" }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "11px", fontWeight: 600, color: g, marginBottom: "2px" }}>Copy Trading</div>
+            <div style={{ fontSize: "10px", color: muted }}>Copy Trading and many other options are available to Holders only.</div>
+          </div>
+          <button
+            onClick={() => setShowCopyTradeInfo(false)}
+            style={{ background: "none", border: "none", cursor: "pointer", color: dim, fontSize: "14px", lineHeight: 1 }}
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {!isAuthenticated ? (
         <div style={{ textAlign: "center", padding: "24px 12px" }}>
@@ -330,12 +406,22 @@ export function WalletTrackerPanel({
                       <div style={{ fontSize: "8px", color: dim, fontFamily: "monospace" }}>{shortAddr(w.wallet_address)}</div>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                      <span style={{ fontSize: "8px", color: w.notifications_enabled ? g : dim }}>
-                        {w.notifications_enabled ? "🔔" : "🔕"}
-                      </span>
-                      <span style={{ fontSize: "8px", color: w.is_copy_trading_enabled ? g : dim }}>
-                        {w.is_copy_trading_enabled ? "📋" : "—"}
-                      </span>
+                      <button
+                        onClick={() => toggleNotifications(w.id, !w.notifications_enabled)}
+                        style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                      >
+                        <span style={{ fontSize: "8px", color: w.notifications_enabled ? g : dim }}>
+                          {w.notifications_enabled ? "🔔" : "🔕"}
+                        </span>
+                      </button>
+                      <button
+                        onClick={handleCopyTradeToggle}
+                        style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                      >
+                        <span style={{ fontSize: "8px", color: w.is_copy_trading_enabled ? g : dim }}>
+                          {w.is_copy_trading_enabled ? "📋" : "—"}
+                        </span>
+                      </button>
                     </div>
                     <button
                       onClick={() => removeWallet(w.id)}
@@ -500,8 +586,15 @@ function PanelTradesTab({ wallets, sz, f, navigate }: { wallets: any[]; sz: any;
   const [trades, setTrades] = useState<WalletTrade[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Use ref for addresses to avoid re-fetching on wallet object changes
+  const addressesRef = useRef<string>("");
+
   useEffect(() => {
     if (wallets.length === 0) return;
+    const newAddrs = wallets.map((w: any) => w.wallet_address).sort().join(",");
+    if (newAddrs === addressesRef.current && trades.length > 0) return;
+    addressesRef.current = newAddrs;
+
     setLoading(true);
     const addresses = wallets.map((w: any) => w.wallet_address);
     supabase

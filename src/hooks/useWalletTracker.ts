@@ -127,6 +127,32 @@ export function useWalletTracker() {
     }
   };
 
+  const toggleNotifications = async (walletId: string, enabled: boolean) => {
+    // Optimistic update
+    setWallets((prev) => prev.map((w) => w.id === walletId ? { ...w, notifications_enabled: enabled } : w));
+    try {
+      await supabase.functions.invoke("wallet-tracker-manage", {
+        body: { action: "update", user_profile_id: profileId, wallet_id: walletId, updates: { notifications_enabled: enabled } },
+      });
+    } catch (err) {
+      console.error("Failed to toggle notifications:", err);
+      setWallets((prev) => prev.map((w) => w.id === walletId ? { ...w, notifications_enabled: !enabled } : w));
+    }
+  };
+
+  const toggleCopyTrading = async (walletId: string, enabled: boolean) => {
+    // Optimistic update
+    setWallets((prev) => prev.map((w) => w.id === walletId ? { ...w, is_copy_trading_enabled: enabled } : w));
+    try {
+      await supabase.functions.invoke("wallet-tracker-manage", {
+        body: { action: "update", user_profile_id: profileId, wallet_id: walletId, updates: { is_copy_trading_enabled: enabled } },
+      });
+    } catch (err) {
+      console.error("Failed to toggle copy trading:", err);
+      setWallets((prev) => prev.map((w) => w.id === walletId ? { ...w, is_copy_trading_enabled: !enabled } : w));
+    }
+  };
+
   return {
     isAuthenticated,
     login,
@@ -137,5 +163,7 @@ export function useWalletTracker() {
     addWallet,
     removeWallet,
     removeAll,
+    toggleNotifications,
+    toggleCopyTrading,
   };
 }
