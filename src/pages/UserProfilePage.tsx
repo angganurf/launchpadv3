@@ -29,7 +29,7 @@ export default function UserProfilePage() {
     queryKey: ["profile-sol-balance", wallet],
     queryFn: async () => {
       if (!wallet) return null;
-      const rpcUrl = import.meta.env.VITE_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+      const { url: rpcUrl } = getRpcUrl();
       const connection = new Connection(rpcUrl, "confirmed");
       const lamports = await connection.getBalance(new PublicKey(wallet));
       return lamports / LAMPORTS_PER_SOL;
