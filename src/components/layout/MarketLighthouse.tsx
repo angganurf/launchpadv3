@@ -12,6 +12,7 @@ import jupiterIcon from "@/assets/jupiter-icon.svg";
 import phoenixIcon from "@/assets/phoenix-icon.png";
 import lifinityIcon from "@/assets/lifinity-icon.ico";
 import pumpswapIcon from "@/assets/pumpswap-icon.png";
+import solfiIcon from "@/assets/solfi-icon.png";
 
 const LAUNCHPAD_ICONS: Record<string, string> = {
   pumpfun: pumpfunPill,
@@ -39,8 +40,8 @@ const PROTOCOL_ICONS: Record<string, string> = {
   "Phoenix": phoenixIcon,
   "Lifinity": lifinityIcon,
   "Lifinity V2": lifinityIcon,
-  "SolFi": raydiumIcon,
-  "SolFi V2": raydiumIcon,
+  "SolFi": solfiIcon,
+  "SolFi V2": solfiIcon,
   "Raydium AMM": raydiumIcon,
   "Raydium CLMM": raydiumIcon,
   "Raydium CPMM": raydiumIcon,
@@ -57,8 +58,8 @@ function getProtocolIcon(name: string): string {
   if (lower.includes("pump")) return pumpswapIcon;
   if (lower.includes("phoenix")) return phoenixIcon;
   if (lower.includes("lifinity")) return lifinityIcon;
-  if (lower.includes("solfi")) return raydiumIcon;
-  return raydiumIcon;
+  if (lower.includes("solfi")) return solfiIcon;
+  return "";
 }
 
 const TIME_TABS = ["5m", "1h", "6h", "24h"] as const;
@@ -297,7 +298,11 @@ function IconCard({ icon, label, value, change, compact }: { icon: string; label
       alignItems: "center",
       gap: compact ? "2px" : "3px",
     }}>
-      <img src={icon} alt={label} style={{ width: compact ? "18px" : "24px", height: compact ? "18px" : "24px", borderRadius: compact ? "4px" : "5px", objectFit: "cover" }} />
+      {icon ? (
+        <img src={icon} alt={label} style={{ width: compact ? "18px" : "24px", height: compact ? "18px" : "24px", borderRadius: compact ? "4px" : "5px", objectFit: "cover" }} />
+      ) : (
+        <div style={{ width: compact ? "18px" : "24px", height: compact ? "18px" : "24px", borderRadius: compact ? "4px" : "5px", background: "#333", display: "flex", alignItems: "center", justifyContent: "center", fontSize: compact ? "10px" : "13px", fontWeight: 700, color: "#aaa" }}>{label.charAt(0)}</div>
+      )}
       <span style={{ fontSize: compact ? "10px" : "13px", fontWeight: 700 }}>{value}</span>
       {change !== undefined && (
         <span style={{ fontSize: compact ? "8px" : "10px", color: change >= 0 ? g : r, fontWeight: 500 }}>{fPct(change)}</span>
