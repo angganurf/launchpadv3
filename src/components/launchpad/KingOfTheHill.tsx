@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Users, Bot, BadgeCheck, TrendingUp, BarChart3, ArrowUpRight, Globe, MessageCircle, Copy, Check, Zap } from "lucide-react";
+import { Users, Bot, BadgeCheck, TrendingUp, BarChart3, ArrowUpRight, Globe, MessageCircle, Copy, Check, Zap, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSolPrice } from "@/hooks/useSolPrice";
 import { useKingOfTheHill, type KingToken } from "@/hooks/useKingOfTheHill";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { PumpBadge } from "@/components/clawbook/PumpBadge";
 import { BagsBadge } from "@/components/clawbook/BagsBadge";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useVisitorTracking } from "@/hooks/useVisitorTracking";
 import { OptimizedTokenImage } from "@/components/ui/OptimizedTokenImage";
 import { copyToClipboard } from "@/lib/clipboard";
