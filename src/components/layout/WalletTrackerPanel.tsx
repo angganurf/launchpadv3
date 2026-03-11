@@ -138,7 +138,9 @@ export function WalletTrackerPanel({
 
   const handleRemove = async (id: string) => {
     try {
-      await supabase.from("tracked_wallets").delete().eq("id", id);
+      await supabase.functions.invoke("wallet-tracker-manage", {
+        body: { action: "remove", user_profile_id: profileId, wallet_id: id },
+      });
       setWallets((prev) => prev.filter((w) => w.id !== id));
     } catch (err) {
       console.error("Failed to remove wallet:", err);
