@@ -444,19 +444,19 @@ export function StickyStatsFooter() {
 
 function StatItem({ label, value }: { label: string; value: string | number }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 6px", flexShrink: 0, whiteSpace: "nowrap" }}>
-      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.05em", color: "hsl(var(--muted-foreground))" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "3px", padding: "2px 4px", flexShrink: 0, whiteSpace: "nowrap" }}>
+      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "9px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.04em", color: "rgba(255,255,255,0.35)" }}>
         {label}
       </span>
-      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px", fontWeight: 600, color: "hsl(var(--foreground))" }}>
+      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: "10px", fontWeight: 600, color: "rgba(255,255,255,0.75)" }}>
         {value}
       </span>
     </div>
   );
 }
 
-function Divider() {
+function Dot() {
   return (
-    <span style={{ color: "hsl(var(--border))", fontSize: "11px", flexShrink: 0, padding: "0 2px" }}>|</span>
+    <span style={{ color: "rgba(255,255,255,0.12)", fontSize: "8px", flexShrink: 0, padding: "0 1px" }}>·</span>
   );
 }
