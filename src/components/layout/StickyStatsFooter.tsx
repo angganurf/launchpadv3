@@ -4,9 +4,10 @@ import { useClawStats } from "@/hooks/useClawStats";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLaunchpadStats } from "@/hooks/useLaunchpadStats";
 import { useLocation } from "react-router-dom";
-import { ChevronDown, Server, RefreshCw, Layers, Wallet } from "lucide-react";
+import { ChevronDown, Server, RefreshCw, Layers, Wallet, Rocket } from "lucide-react";
 import { MarketLighthouse } from "./MarketLighthouse";
 import { WalletTrackerPanel } from "./WalletTrackerPanel";
+import { NewPairsPanel } from "./NewPairsPanel";
 import pumpfunPill from "@/assets/pumpfun-pill.webp";
 import meteoraIcon from "@/assets/meteora-icon.svg";
 import bonkIcon from "@/assets/bonk-icon.jpg";
@@ -70,13 +71,16 @@ export function StickyStatsFooter() {
   const [regionOpen, setRegionOpen] = useState(false);
   const [launchpadOpen, setLaunchpadOpen] = useState(false);
   const [walletTrackerOpen, setWalletTrackerOpen] = useState(false);
+  const [newPairsOpen, setNewPairsOpen] = useState(false);
   const [pings, setPings] = useState<Record<string, number>>({});
   const [refreshing, setRefreshing] = useState(false);
   const [lpRefreshing, setLpRefreshing] = useState(false);
   const [wtRefreshing, setWtRefreshing] = useState(false);
+  const [npRefreshing, setNpRefreshing] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const lpDropdownRef = useRef<HTMLDivElement>(null);
   const wtDropdownRef = useRef<HTMLDivElement>(null);
+  const npDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -105,7 +109,7 @@ export function StickyStatsFooter() {
 
   // Close dropdowns on outside click
   useEffect(() => {
-    if (!regionOpen && !launchpadOpen && !walletTrackerOpen) return;
+  if (!regionOpen && !launchpadOpen && !walletTrackerOpen && !newPairsOpen) return;
     const handleClick = (e: MouseEvent) => {
       if (regionOpen && dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setRegionOpen(false);
@@ -116,10 +120,13 @@ export function StickyStatsFooter() {
       if (walletTrackerOpen && wtDropdownRef.current && !wtDropdownRef.current.contains(e.target as Node)) {
         setWalletTrackerOpen(false);
       }
+      if (newPairsOpen && npDropdownRef.current && !npDropdownRef.current.contains(e.target as Node)) {
+        setNewPairsOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [regionOpen, launchpadOpen, walletTrackerOpen]);
+  }, [regionOpen, launchpadOpen, walletTrackerOpen, newPairsOpen]);
 
   const handleRefresh = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -139,6 +146,12 @@ export function StickyStatsFooter() {
     e.stopPropagation();
     setWtRefreshing(true);
     setTimeout(() => setWtRefreshing(false), 600);
+  };
+
+  const handleNpRefresh = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNpRefreshing(true);
+    setTimeout(() => setNpRefreshing(false), 600);
   };
 
   const isPunchDomain = typeof window !== "undefined" && (window.location.hostname === "punchlaunch.fun" || window.location.hostname === "www.punchlaunch.fun");
@@ -187,7 +200,7 @@ export function StickyStatsFooter() {
           {/* Wallet Tracker */}
           <div ref={wtDropdownRef} style={{ position: "relative" }}>
             <button
-              onClick={() => { setWalletTrackerOpen(!walletTrackerOpen); setRegionOpen(false); setLaunchpadOpen(false); }}
+              onClick={() => { setWalletTrackerOpen(!walletTrackerOpen); setRegionOpen(false); setLaunchpadOpen(false); setNewPairsOpen(false); }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -218,6 +231,43 @@ export function StickyStatsFooter() {
                 zIndex: 100000,
               }}>
                 <WalletTrackerPanel onRefresh={handleWtRefresh} refreshing={wtRefreshing} compact={isMobile} />
+              </div>
+            )}
+          </div>
+
+          {/* New Pairs */}
+          <div ref={npDropdownRef} style={{ position: "relative" }}>
+            <button
+              onClick={() => { setNewPairsOpen(!newPairsOpen); setWalletTrackerOpen(false); setRegionOpen(false); setLaunchpadOpen(false); }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                padding: "2px 7px",
+                borderRadius: "4px",
+                border: "1px solid rgba(200,255,0,0.15)",
+                background: newPairsOpen ? "rgba(200,255,0,0.12)" : "rgba(255,255,255,0.04)",
+                cursor: "pointer",
+                fontSize: "10px",
+                fontWeight: 500,
+                color: newPairsOpen ? "#c8ff00" : "rgba(255,255,255,0.6)",
+                whiteSpace: "nowrap",
+                transition: "all 0.15s",
+              }}
+            >
+              <Rocket style={{ width: "11px", height: "11px" }} />
+              <span>New Pairs</span>
+            </button>
+
+            {newPairsOpen && (
+              <div style={{
+                position: isMobile ? "fixed" : "absolute",
+                bottom: isMobile ? "44px" : "calc(100% + 6px)",
+                left: isMobile ? "50%" : 0,
+                transform: isMobile ? "translateX(-50%)" : undefined,
+                zIndex: 100000,
+              }}>
+                <NewPairsPanel onRefresh={handleNpRefresh} refreshing={npRefreshing} compact={isMobile} />
               </div>
             )}
           </div>
@@ -281,7 +331,7 @@ export function StickyStatsFooter() {
           {/* Launchpad selector */}
           <div ref={lpDropdownRef} style={{ position: "relative" }}>
             <button
-              onClick={() => { setLaunchpadOpen(!launchpadOpen); setRegionOpen(false); setWalletTrackerOpen(false); }}
+              onClick={() => { setLaunchpadOpen(!launchpadOpen); setRegionOpen(false); setWalletTrackerOpen(false); setNewPairsOpen(false); }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -333,7 +383,7 @@ export function StickyStatsFooter() {
           {/* Region selector */}
           <div ref={dropdownRef} style={{ position: "relative" }}>
             <button
-              onClick={() => { setRegionOpen(!regionOpen); setLaunchpadOpen(false); setWalletTrackerOpen(false); }}
+              onClick={() => { setRegionOpen(!regionOpen); setLaunchpadOpen(false); setWalletTrackerOpen(false); setNewPairsOpen(false); }}
               style={{
                 display: "flex",
                 alignItems: "center",
