@@ -526,7 +526,7 @@ export function KingOfTheHill() {
 
         <div
           ref={scrollRef}
-          className="flex-1 flex flex-row md:gap-4 overflow-x-auto pb-2 md:pb-0 snap-x snap-mandatory scrollbar-hide mx-1 md:mx-0 [&>*]:snap-center [&>*]:min-w-full [&>*]:flex-shrink-0 md:[&>*]:min-w-0 md:[&>*]:flex-shrink md:[&>*]:snap-align-none"
+          className="flex-1 flex flex-row md:gap-5 overflow-x-auto md:overflow-visible pb-2 md:pb-0 snap-x snap-mandatory scrollbar-hide mx-1 md:mx-0 md:px-1 [&>*]:snap-center [&>*]:min-w-full [&>*]:flex-shrink-0 md:[&>*]:min-w-0 md:[&>*]:flex-shrink md:[&>*]:snap-align-none"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {isLoading
