@@ -260,6 +260,11 @@ Deno.serve(async (req) => {
       trackedAddresses.add(row.wallet_address);
     }
 
+    // Debug: log what we're matching against
+    const txSignatures = transactions.map(t => t.signature?.slice(0, 10)).join(", ");
+    const txFeePayers = [...new Set(transactions.map(t => t.feePayer).filter(Boolean))];
+    console.log(`[DEBUG] ${transactions.length} txs, feePayers: ${txFeePayers.map(f => f?.slice(0,8)).join(",")}, tracked: ${[...trackedAddresses].map(a => a.slice(0,8)).join(",")}`);
+
     const inserts: any[] = [];
     const seenSigs = new Set<string>();
 
