@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { RefreshCw, Plus, Download, Upload, Trash2, Search, Wallet, Loader2, Maximize2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { RefreshCw, Plus, Download, Upload, Trash2, Search, Wallet, Loader2, Maximize2, TrendingUp, TrendingDown, Eye, Activity, Bell, BellOff } from "lucide-react";
 import { useWalletTracker, TRACKER_TABS, type TrackerTab, shortAddr } from "@/hooks/useWalletTracker";
+import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
@@ -139,173 +140,293 @@ export function WalletTrackerPanel({
         </div>
       ) : (
         <>
-          {/* Toolbar */}
-          <div style={{ display: "flex", gap: sz.gap, marginBottom: compact ? "6px" : "8px", alignItems: "center" }}>
-            <div style={{ flex: 1, position: "relative" }}>
-              <Search style={{ position: "absolute", left: "6px", top: "50%", transform: "translateY(-50%)", width: "12px", height: "12px", color: dim }} />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name or addr..."
-                style={{
-                  width: "100%",
-                  background: cardBg,
-                  border: "1px solid #2a2a2a",
-                  borderRadius: "6px",
-                  padding: "5px 6px 5px 22px",
-                  fontSize: sz.fs.label,
-                  color: "#fff",
-                  outline: "none",
-                  fontFamily: f,
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
-            <ToolBtn icon={<Download style={{ width: "11px", height: "11px" }} />} label="Import" compact={compact} onClick={() => {}} />
-            <ToolBtn icon={<Upload style={{ width: "11px", height: "11px" }} />} label="Export" compact={compact} onClick={() => {}} />
-            <ToolBtn
-              icon={<Plus style={{ width: "11px", height: "11px" }} />}
-              label="Add"
-              compact={compact}
-              highlight
-              onClick={() => setShowAddForm(!showAddForm)}
-            />
-          </div>
-
-          {/* Add Form */}
-          {showAddForm && (
-            <div style={{ background: cardBg, border: "1px solid #2a2a2a", borderRadius: "8px", padding: "8px", marginBottom: "8px" }}>
-              <input
-                value={newAddr}
-                onChange={(e) => setNewAddr(e.target.value)}
-                placeholder="Wallet address"
-                style={{
-                  width: "100%",
-                  background: "#111",
-                  border: "1px solid #333",
-                  borderRadius: "5px",
-                  padding: "5px 8px",
-                  fontSize: sz.fs.label,
-                  color: "#fff",
-                  outline: "none",
-                  marginBottom: "4px",
-                  fontFamily: f,
-                  boxSizing: "border-box",
-                }}
-              />
-              <div style={{ display: "flex", gap: "4px" }}>
-                <input
-                  value={newLabel}
-                  onChange={(e) => setNewLabel(e.target.value)}
-                  placeholder="Label (optional)"
-                  style={{
-                    flex: 1,
-                    background: "#111",
-                    border: "1px solid #333",
-                    borderRadius: "5px",
-                    padding: "5px 8px",
-                    fontSize: sz.fs.label,
-                    color: "#fff",
-                    outline: "none",
-                    fontFamily: f,
-                  }}
+          {/* Toolbar (All tab) */}
+          {activeTab === "All" && (
+            <>
+              <div style={{ display: "flex", gap: sz.gap, marginBottom: compact ? "6px" : "8px", alignItems: "center" }}>
+                <div style={{ flex: 1, position: "relative" }}>
+                  <Search style={{ position: "absolute", left: "6px", top: "50%", transform: "translateY(-50%)", width: "12px", height: "12px", color: dim }} />
+                  <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search by name or addr..."
+                    style={{
+                      width: "100%",
+                      background: cardBg,
+                      border: "1px solid #2a2a2a",
+                      borderRadius: "6px",
+                      padding: "5px 6px 5px 22px",
+                      fontSize: sz.fs.label,
+                      color: "#fff",
+                      outline: "none",
+                      fontFamily: f,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
+                <ToolBtn icon={<Download style={{ width: "11px", height: "11px" }} />} label="Import" compact={compact} onClick={() => {}} />
+                <ToolBtn icon={<Upload style={{ width: "11px", height: "11px" }} />} label="Export" compact={compact} onClick={() => {}} />
+                <ToolBtn
+                  icon={<Plus style={{ width: "11px", height: "11px" }} />}
+                  label="Add"
+                  compact={compact}
+                  highlight
+                  onClick={() => setShowAddForm(!showAddForm)}
                 />
+              </div>
+
+              {showAddForm && (
+                <div style={{ background: cardBg, border: "1px solid #2a2a2a", borderRadius: "8px", padding: "8px", marginBottom: "8px" }}>
+                  <input
+                    value={newAddr}
+                    onChange={(e) => setNewAddr(e.target.value)}
+                    placeholder="Wallet address"
+                    style={{
+                      width: "100%",
+                      background: "#111",
+                      border: "1px solid #333",
+                      borderRadius: "5px",
+                      padding: "5px 8px",
+                      fontSize: sz.fs.label,
+                      color: "#fff",
+                      outline: "none",
+                      marginBottom: "4px",
+                      fontFamily: f,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <div style={{ display: "flex", gap: "4px" }}>
+                    <input
+                      value={newLabel}
+                      onChange={(e) => setNewLabel(e.target.value)}
+                      placeholder="Label (optional)"
+                      style={{
+                        flex: 1,
+                        background: "#111",
+                        border: "1px solid #333",
+                        borderRadius: "5px",
+                        padding: "5px 8px",
+                        fontSize: sz.fs.label,
+                        color: "#fff",
+                        outline: "none",
+                        fontFamily: f,
+                      }}
+                    />
+                    <button
+                      onClick={handleAdd}
+                      disabled={adding || !newAddr.trim()}
+                      style={{
+                        background: g,
+                        color: "#000",
+                        border: "none",
+                        borderRadius: "5px",
+                        padding: "4px 12px",
+                        fontSize: sz.fs.btn,
+                        fontWeight: 600,
+                        cursor: adding ? "wait" : "pointer",
+                        opacity: adding || !newAddr.trim() ? 0.5 : 1,
+                        fontFamily: f,
+                      }}
+                    >
+                      {adding ? "..." : "Add"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Table Header */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "70px 1fr 70px 70px 28px",
+                  gap: "4px",
+                  padding: "4px 6px",
+                  borderBottom: "1px solid #222",
+                  marginBottom: "2px",
+                }}
+              >
+                <span style={{ fontSize: sz.fs.label, color: dim, fontWeight: 500 }}>Added</span>
+                <span style={{ fontSize: sz.fs.label, color: dim, fontWeight: 500 }}>Name</span>
+                <span style={{ fontSize: sz.fs.label, color: dim, fontWeight: 500, textAlign: "right" }}>Balance</span>
+                <span style={{ fontSize: sz.fs.label, color: dim, fontWeight: 500, textAlign: "right" }}>Last Active</span>
                 <button
-                  onClick={handleAdd}
-                  disabled={adding || !newAddr.trim()}
+                  onClick={removeAll}
+                  title="Remove All"
+                  style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", color: r }}
+                >
+                  <Trash2 style={{ width: "11px", height: "11px" }} />
+                </button>
+              </div>
+
+              {/* Rows */}
+              {filtered.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "16px 0", color: dim, fontSize: sz.fs.val }}>
+                  {loading ? "Loading..." : wallets.length === 0 ? "No wallets tracked yet" : "No matches"}
+                </div>
+              ) : (
+                filtered.map((w) => (
+                  <div
+                    key={w.id}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "70px 1fr 70px 70px 28px",
+                      gap: "4px",
+                      padding: "5px 6px",
+                      borderRadius: "5px",
+                      alignItems: "center",
+                      transition: "background 0.1s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <span style={{ fontSize: sz.fs.label, color: muted }}>
+                      {formatDistanceToNow(new Date(w.created_at), { addSuffix: false }).replace("about ", "").replace(" ago", "")}
+                    </span>
+                    <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+                      <span style={{ fontSize: sz.fs.val, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {w.wallet_label || shortAddr(w.wallet_address)}
+                      </span>
+                      {w.wallet_label && (
+                        <span style={{ fontSize: "8px", color: dim }}>{shortAddr(w.wallet_address)}</span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: sz.fs.val, fontWeight: 600, textAlign: "right", color: w.balance !== null ? "#fff" : dim }}>
+                      {w.balance !== null ? `${w.balance.toFixed(2)}` : "—"}
+                    </span>
+                    <span style={{ fontSize: sz.fs.label, color: muted, textAlign: "right" }}>
+                      {w.lastActive
+                        ? formatDistanceToNow(new Date(w.lastActive), { addSuffix: false }).replace("about ", "")
+                        : "—"}
+                    </span>
+                    <button
+                      onClick={() => removeWallet(w.id)}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", color: dim }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = r)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = dim)}
+                    >
+                      <Trash2 style={{ width: "10px", height: "10px" }} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </>
+          )}
+
+          {/* Manager Tab */}
+          {activeTab === "Manager" && (
+            <div>
+              {wallets.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "16px 0", color: dim, fontSize: sz.fs.val }}>
+                  No wallets to manage
+                </div>
+              ) : (
+                wallets.map((w) => (
+                  <div
+                    key={w.id}
+                    style={{ padding: "6px", borderBottom: "1px solid #222", display: "flex", alignItems: "center", gap: "6px" }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: sz.fs.val, fontWeight: 600 }}>{w.wallet_label || "Unlabeled"}</div>
+                      <div style={{ fontSize: "8px", color: dim, fontFamily: "monospace" }}>{shortAddr(w.wallet_address)}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                      <span style={{ fontSize: "8px", color: w.notifications_enabled ? g : dim }}>
+                        {w.notifications_enabled ? "🔔" : "🔕"}
+                      </span>
+                      <span style={{ fontSize: "8px", color: w.is_copy_trading_enabled ? g : dim }}>
+                        {w.is_copy_trading_enabled ? "📋" : "—"}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeWallet(w.id)}
+                      style={{ background: "none", border: "none", cursor: "pointer", padding: 0, color: dim }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = r)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = dim)}
+                    >
+                      <Trash2 style={{ width: "10px", height: "10px" }} />
+                    </button>
+                  </div>
+                ))
+              )}
+              <div style={{ textAlign: "center", padding: "8px 0" }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate("/wallet-tracker"); }}
                   style={{
-                    background: g,
-                    color: "#000",
-                    border: "none",
-                    borderRadius: "5px",
+                    background: "none",
+                    border: "1px solid #333",
+                    borderRadius: "6px",
                     padding: "4px 12px",
                     fontSize: sz.fs.btn,
-                    fontWeight: 600,
-                    cursor: adding ? "wait" : "pointer",
-                    opacity: adding || !newAddr.trim() ? 0.5 : 1,
+                    color: g,
+                    cursor: "pointer",
                     fontFamily: f,
                   }}
                 >
-                  {adding ? "..." : "Add"}
+                  Open Full Manager →
                 </button>
               </div>
             </div>
           )}
 
-          {/* Table Header */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "70px 1fr 70px 70px 28px",
-              gap: "4px",
-              padding: "4px 6px",
-              borderBottom: "1px solid #222",
-              marginBottom: "2px",
-            }}
-          >
-            <span style={{ fontSize: sz.fs.label, color: dim, fontWeight: 500 }}>Added</span>
-            <span style={{ fontSize: sz.fs.label, color: dim, fontWeight: 500 }}>Name</span>
-            <span style={{ fontSize: sz.fs.label, color: dim, fontWeight: 500, textAlign: "right" }}>Balance</span>
-            <span style={{ fontSize: sz.fs.label, color: dim, fontWeight: 500, textAlign: "right" }}>Last Active</span>
-            <button
-              onClick={removeAll}
-              title="Remove All"
-              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", color: r }}
-            >
-              <Trash2 style={{ width: "11px", height: "11px" }} />
-            </button>
-          </div>
+          {/* Trades Tab */}
+          {activeTab === "Trades" && (
+            <PanelTradesTab wallets={wallets} sz={sz} f={f} navigate={navigate} />
+          )}
 
-          {/* Rows */}
-          {filtered.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "16px 0", color: dim, fontSize: sz.fs.val }}>
-              {loading ? "Loading..." : wallets.length === 0 ? "No wallets tracked yet" : "No matches"}
-            </div>
-          ) : (
-            filtered.map((w) => (
-              <div
-                key={w.id}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "70px 1fr 70px 70px 28px",
-                  gap: "4px",
-                  padding: "5px 6px",
-                  borderRadius: "5px",
-                  alignItems: "center",
-                  transition: "background 0.1s",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-              >
-                <span style={{ fontSize: sz.fs.label, color: muted }}>
-                  {formatDistanceToNow(new Date(w.created_at), { addSuffix: false }).replace("about ", "").replace(" ago", "")}
-                </span>
-                <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-                  <span style={{ fontSize: sz.fs.val, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {w.wallet_label || shortAddr(w.wallet_address)}
-                  </span>
-                  {w.wallet_label && (
-                    <span style={{ fontSize: "8px", color: dim }}>{shortAddr(w.wallet_address)}</span>
-                  )}
+          {/* Monitor Tab */}
+          {activeTab === "Monitor" && (
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-around", padding: "8px 0", borderBottom: "1px solid #222", marginBottom: "4px" }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "16px", fontWeight: 700 }}>{wallets.length}</div>
+                  <div style={{ fontSize: "8px", color: dim }}>Tracked</div>
                 </div>
-                <span style={{ fontSize: sz.fs.val, fontWeight: 600, textAlign: "right", color: w.balance !== null ? "#fff" : dim }}>
-                  {w.balance !== null ? `${w.balance.toFixed(2)}` : "—"}
-                </span>
-                <span style={{ fontSize: sz.fs.label, color: muted, textAlign: "right" }}>
-                  {w.lastActive
-                    ? formatDistanceToNow(new Date(w.lastActive), { addSuffix: false }).replace("about ", "")
-                    : "—"}
-                </span>
-                <button
-                  onClick={() => removeWallet(w.id)}
-                  style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center", color: dim }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = r)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = dim)}
-                >
-                  <Trash2 style={{ width: "10px", height: "10px" }} />
-                </button>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "16px", fontWeight: 700, color: g }}>{wallets.filter(w => w.notifications_enabled).length}</div>
+                  <div style={{ fontSize: "8px", color: dim }}>Alerts On</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "16px", fontWeight: 700, color: g }}>{wallets.filter(w => w.is_copy_trading_enabled).length}</div>
+                  <div style={{ fontSize: "8px", color: dim }}>Copy Trading</div>
+                </div>
               </div>
-            ))
+              {wallets
+                .sort((a, b) => {
+                  if (!a.lastActive && !b.lastActive) return 0;
+                  if (!a.lastActive) return 1;
+                  if (!b.lastActive) return -1;
+                  return new Date(b.lastActive).getTime() - new Date(a.lastActive).getTime();
+                })
+                .map((w) => (
+                  <div
+                    key={w.id}
+                    style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px 6px", borderBottom: "1px solid #1a1a1a" }}
+                  >
+                    <span
+                      style={{
+                        width: "6px",
+                        height: "6px",
+                        borderRadius: "50%",
+                        background: w.lastActive && (Date.now() - new Date(w.lastActive).getTime()) < 1000 * 60 * 30 ? g : dim,
+                        boxShadow: w.lastActive && (Date.now() - new Date(w.lastActive).getTime()) < 1000 * 60 * 30 ? `0 0 4px ${g}` : "none",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: sz.fs.val, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {w.wallet_label || shortAddr(w.wallet_address)}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: sz.fs.val, fontWeight: 600 }}>{w.balance !== null ? `${w.balance.toFixed(2)}` : "—"}</div>
+                      <div style={{ fontSize: "7px", color: muted }}>
+                        {w.lastActive ? formatDistanceToNow(new Date(w.lastActive), { addSuffix: true }) : "—"}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
           )}
 
           {/* Footer */}
@@ -360,5 +481,120 @@ function ToolBtn({
       {icon}
       {!compact && label}
     </button>
+  );
+}
+
+interface WalletTrade {
+  id: string;
+  wallet_address: string;
+  token_mint: string;
+  token_name: string | null;
+  token_ticker: string | null;
+  trade_type: string;
+  sol_amount: number;
+  token_amount: number;
+  created_at: string;
+}
+
+function PanelTradesTab({ wallets, sz, f, navigate }: { wallets: any[]; sz: any; f: string; navigate: any }) {
+  const [trades, setTrades] = useState<WalletTrade[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (wallets.length === 0) return;
+    setLoading(true);
+    const addresses = wallets.map((w: any) => w.wallet_address);
+    supabase
+      .from('wallet_trades')
+      .select('*')
+      .in('wallet_address', addresses)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data) setTrades(data as WalletTrade[]);
+        setLoading(false);
+      });
+  }, [wallets]);
+
+  const getLabel = (addr: string) => {
+    const w = wallets.find((w: any) => w.wallet_address === addr);
+    return w?.wallet_label || shortAddr(addr);
+  };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: "16px 0", color: "#888", fontSize: sz.fs.val }}>
+        <Loader2 style={{ width: "12px", height: "12px", animation: "spin 1s linear infinite", display: "inline-block", marginRight: "4px" }} />
+        Loading trades...
+      </div>
+    );
+  }
+
+  if (trades.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "16px 0", color: "#888", fontSize: sz.fs.val }}>
+        {wallets.length === 0 ? "Add wallets to see trades" : "No trades recorded yet"}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {trades.map((t) => (
+        <div
+          key={t.id}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "5px 6px",
+            borderBottom: "1px solid #1a1a1a",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "8px",
+              fontWeight: 700,
+              padding: "1px 4px",
+              borderRadius: "3px",
+              background: t.trade_type === 'buy' ? 'rgba(0,255,170,0.15)' : 'rgba(255,77,77,0.15)',
+              color: t.trade_type === 'buy' ? '#00FFAA' : '#FF4D4D',
+              flexShrink: 0,
+            }}
+          >
+            {t.trade_type === 'buy' ? 'BUY' : 'SELL'}
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: sz.fs.val, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {t.token_ticker || t.token_name || shortAddr(t.token_mint)}
+            </div>
+            <div style={{ fontSize: "7px", color: "#888" }}>{getLabel(t.wallet_address)}</div>
+          </div>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div style={{ fontSize: sz.fs.val, fontWeight: 600 }}>{t.sol_amount.toFixed(3)} SOL</div>
+            <div style={{ fontSize: "7px", color: "#aaa" }}>
+              {formatDistanceToNow(new Date(t.created_at), { addSuffix: true })}
+            </div>
+          </div>
+        </div>
+      ))}
+      <div style={{ textAlign: "center", padding: "8px 0" }}>
+        <button
+          onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate("/wallet-tracker"); }}
+          style={{
+            background: "none",
+            border: "1px solid #333",
+            borderRadius: "6px",
+            padding: "4px 12px",
+            fontSize: sz.fs.btn,
+            color: '#00FFAA',
+            cursor: "pointer",
+            fontFamily: f,
+          }}
+        >
+          View All Trades →
+        </button>
+      </div>
+    </div>
   );
 }
