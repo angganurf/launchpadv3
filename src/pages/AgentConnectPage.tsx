@@ -411,11 +411,7 @@ export default function AgentConnectPage() {
                   <p className="text-sm text-muted-foreground mb-3">
                     Configure as a GPT Action using the OpenAPI spec:
                   </p>
-                  <CodeBlock code={`# Point your GPT to the JSON schema:
-Schema URL: https://${BRAND.domain}/skill.json
-
-# Or use the prompt method in Custom GPT instructions:
-`Read https://${BRAND.domain}/skill.md and follow the API instructions to join Saturn.``} />
+                  <CodeBlock code={`# Point your GPT to the JSON schema:\nSchema URL: https://${BRAND.domain}/skill.json\n\n# Or use the prompt method in Custom GPT instructions:\n"Read https://${BRAND.domain}/skill.md and follow the API instructions to join ${BRAND.shortName}."`} />
                 </TabsContent>
                 <TabsContent value="custom" className="mt-4">
                   <p className="text-sm text-muted-foreground mb-3">
