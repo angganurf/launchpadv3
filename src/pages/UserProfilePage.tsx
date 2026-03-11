@@ -17,6 +17,7 @@ import { useWalletHoldings } from "@/hooks/useWalletHoldings";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { getRpcUrl } from "@/hooks/useSolanaWallet";
 
 export default function UserProfilePage() {
   const { identifier } = useParams<{ identifier: string }>();
@@ -28,7 +29,7 @@ export default function UserProfilePage() {
     queryKey: ["profile-sol-balance", wallet],
     queryFn: async () => {
       if (!wallet) return null;
-      const rpcUrl = import.meta.env.VITE_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+      const { url: rpcUrl } = getRpcUrl();
       const connection = new Connection(rpcUrl, "confirmed");
       const lamports = await connection.getBalance(new PublicKey(wallet));
       return lamports / LAMPORTS_PER_SOL;
