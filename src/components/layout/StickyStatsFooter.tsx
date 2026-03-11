@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLaunchpadStats } from "@/hooks/useLaunchpadStats";
 import { useLocation } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { ChevronDown, Server, RefreshCw, Layers, Wallet, Rocket } from "lucide-react";
 import { MarketLighthouse } from "./MarketLighthouse";
 import { WalletTrackerPanel } from "./WalletTrackerPanel";
@@ -64,6 +65,7 @@ export function StickyStatsFooter() {
   const { data: launchpadStats, refetch: refetchLaunchpads } = useLaunchpadStats();
   const isMobile = useIsMobile();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [platformUsers, setPlatformUsers] = useState<number | null>(null);
   const { pathname } = useLocation();
   const [selectedRegion, setSelectedRegion] = useState("EU-E");
   const [regionOpen, setRegionOpen] = useState(false);
@@ -152,12 +154,16 @@ export function StickyStatsFooter() {
     setTimeout(() => setNpRefreshing(false), 600);
   };
 
+  useEffect(() => {
+    supabase.functions.invoke("privy-user-count").then(({ data }) => {
+      if (data?.count) setPlatformUsers(data.count);
+    });
+  }, []);
+
   const isPunchDomain = typeof window !== "undefined" && (window.location.hostname === "punchlaunch.fun" || window.location.hostname === "www.punchlaunch.fun");
   if (pathname.startsWith("/punch") || pathname.startsWith("/punch-test") || isPunchDomain) return null;
 
   const currentPing = pings[selectedRegion] ?? 0;
-
-  const totalLpTokens = launchpadStats?.reduce((s, lp) => s + lp.total, 0) ?? 0;
 
   const footer = (
     <div
@@ -310,7 +316,7 @@ export function StickyStatsFooter() {
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}>
-          <StatItem label="TKN" value={totalLpTokens.toLocaleString()} />
+          {platformUsers !== null && <StatItem label="Users" value={platformUsers.toLocaleString()} />}
         </div>
 
         {/* RIGHT: Launchpads + Region */}
