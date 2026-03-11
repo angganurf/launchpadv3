@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import defaultAvatar from "@/assets/default-avatar.png";
 
 interface EditProfileModalProps {
   open: boolean;
@@ -190,9 +191,7 @@ export function EditProfileModal({ open, onClose, profile, onSaved }: EditProfil
                 {avatarPreview ? (
                   <img src={avatarPreview} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="h-full w-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl">
-                    {(displayName || username || "?")[0]?.toUpperCase()}
-                  </div>
+                  <img src={defaultAvatar} alt="" className="h-full w-full object-cover" />
                 )}
               </div>
               <button
