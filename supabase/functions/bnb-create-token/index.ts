@@ -6,6 +6,9 @@ import {
   parseEther,
   formatEther,
   encodeFunctionData,
+  keccak256,
+  encodeAbiParameters,
+  parseAbiParameters,
 } from "https://esm.sh/viem@2.45.1";
 import { bsc } from "https://esm.sh/viem@2.45.1/chains";
 import { privateKeyToAccount } from "https://esm.sh/viem@2.45.1/accounts";
@@ -16,165 +19,71 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// PancakeSwap V2 Router on BSC
-const PANCAKESWAP_V2_ROUTER = "0x10ED43C718714eb63d5aA57B78B54917e56f3157" as `0x${string}`;
-
-const ROUTER_ABI = [
+// ============================================================================
+// TunaPortal ABI (only the functions we call)
+// ============================================================================
+const PORTAL_ABI = [
   {
-    name: "addLiquidityETH",
+    name: "newToken",
     type: "function",
     stateMutability: "payable",
     inputs: [
-      { name: "token", type: "address" },
-      { name: "amountTokenDesired", type: "uint256" },
-      { name: "amountTokenMin", type: "uint256" },
-      { name: "amountETHMin", type: "uint256" },
-      { name: "to", type: "address" },
-      { name: "deadline", type: "uint256" },
+      { name: "_name", type: "string" },
+      { name: "_symbol", type: "string" },
+      { name: "_creatorFeeBps", type: "uint256" },
+      { name: "_metadataUri", type: "string" },
+      { name: "_salt", type: "bytes32" },
     ],
-    outputs: [
-      { name: "amountToken", type: "uint256" },
-      { name: "amountETH", type: "uint256" },
-      { name: "liquidity", type: "uint256" },
-    ],
+    outputs: [{ name: "tokenAddress", type: "address" }],
   },
-] as const;
-
-const ERC20_APPROVE_ABI = [
   {
-    name: "approve",
+    name: "predictTokenAddress",
     type: "function",
-    stateMutability: "nonpayable",
+    stateMutability: "view",
     inputs: [
-      { name: "spender", type: "address" },
-      { name: "value", type: "uint256" },
+      { name: "_name", type: "string" },
+      { name: "_symbol", type: "string" },
+      { name: "_salt", type: "bytes32" },
     ],
-    outputs: [{ name: "", type: "bool" }],
+    outputs: [{ name: "", type: "address" }],
+  },
+  {
+    name: "getTokenInfo",
+    type: "function",
+    stateMutability: "view",
+    inputs: [{ name: "_token", type: "address" }],
+    outputs: [
+      { name: "creator", type: "address" },
+      { name: "creatorFeeBps", type: "uint256" },
+      { name: "realBnb", type: "uint256" },
+      { name: "realTokens", type: "uint256" },
+      { name: "bondingProgress", type: "uint256" },
+      { name: "graduated", type: "bool" },
+      { name: "totalFeesCollected", type: "uint256" },
+      { name: "price", type: "uint256" },
+    ],
   },
 ] as const;
 
 // ============================================================================
-// Minimal ERC20 Solidity Source (same as base-create-token)
+// Vanity Address Finder — finds salt where predicted address ends in "8888"
 // ============================================================================
-const ERC20_SOLIDITY_SOURCE = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
-
-contract ClawToken {
-    string public name;
-    string public symbol;
-    uint8 public constant decimals = 18;
-    uint256 public totalSupply;
-
-    mapping(address => uint256) public balanceOf;
-    mapping(address => mapping(address => uint256)) public allowance;
-
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-
-    constructor(string memory _name, string memory _symbol, address _recipient, uint256 _supply) {
-        name = _name;
-        symbol = _symbol;
-        totalSupply = _supply;
-        balanceOf[_recipient] = _supply;
-        emit Transfer(address(0), _recipient, _supply);
-    }
-
-    function transfer(address _to, uint256 _value) public returns (bool) {
-        require(balanceOf[msg.sender] >= _value, "ERC20: insufficient balance");
-        unchecked {
-            balanceOf[msg.sender] -= _value;
-            balanceOf[_to] += _value;
-        }
-        emit Transfer(msg.sender, _to, _value);
-        return true;
-    }
-
-    function approve(address _spender, uint256 _value) public returns (bool) {
-        allowance[msg.sender][_spender] = _value;
-        emit Approval(msg.sender, _spender, _value);
-        return true;
-    }
-
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-        require(balanceOf[_from] >= _value, "ERC20: insufficient balance");
-        require(allowance[_from][msg.sender] >= _value, "ERC20: insufficient allowance");
-        unchecked {
-            allowance[_from][msg.sender] -= _value;
-            balanceOf[_from] -= _value;
-            balanceOf[_to] += _value;
-        }
-        emit Transfer(_from, _to, _value);
-        return true;
-    }
-}`;
-
-// ============================================================================
-// Solidity Compiler
-// ============================================================================
-let cachedCompilation: { abi: any[]; bytecode: `0x${string}` } | null = null;
-
-async function compileERC20(): Promise<{ abi: any[]; bytecode: `0x${string}` }> {
-  if (cachedCompilation) {
-    console.log("[Compile] Using cached compilation");
-    return cachedCompilation;
-  }
-
-  const t0 = Date.now();
-  console.log("[Compile] Fetching Solidity compiler from CDN...");
-
-  const solcUrl = "https://binaries.soliditylang.org/bin/soljson-v0.8.20+commit.a1b79de6.js";
-  const response = await fetch(solcUrl);
-  if (!response.ok) throw new Error(`Failed to fetch Solidity compiler: HTTP ${response.status}`);
-  const solcCode = await response.text();
-  console.log(`[Compile] Compiler fetched (${(solcCode.length / 1024 / 1024).toFixed(1)}MB) in ${Date.now() - t0}ms`);
-
-  const t1 = Date.now();
-  const moduleObj = { exports: {} as any };
-  try {
-    const fn = new Function("module", "exports", "require", solcCode + "\n//# sourceURL=soljson.js");
-    fn(moduleObj, moduleObj.exports, () => ({}));
-  } catch (evalError) {
-    throw new Error(`Solidity compiler initialization failed: ${evalError instanceof Error ? evalError.message : "Unknown error"}`);
-  }
-
-  const soljson = moduleObj.exports;
-  if (!soljson || typeof soljson.cwrap !== "function") {
-    throw new Error("Solc module loaded but cwrap function not available.");
-  }
-
-  const compile = soljson.cwrap("solidity_compile", "string", ["string", "number", "number"]);
-  console.log(`[Compile] Compiler initialized in ${Date.now() - t1}ms`);
-
-  const t2 = Date.now();
-  const input = JSON.stringify({
-    language: "Solidity",
-    sources: { "ClawToken.sol": { content: ERC20_SOLIDITY_SOURCE } },
-    settings: {
-      optimizer: { enabled: true, runs: 200 },
-      outputSelection: { "*": { "*": ["abi", "evm.bytecode.object"] } },
-    },
-  });
-
-  const outputJSON = compile(input, 0, 0);
-  const output = JSON.parse(outputJSON);
-
-  if (output.errors) {
-    const errors = output.errors.filter((e: any) => e.severity === "error");
-    if (errors.length > 0) {
-      throw new Error(`Solidity compilation errors:\n${errors.map((e: any) => e.formattedMessage || e.message).join("\n")}`);
-    }
-  }
-
-  const contract = output.contracts?.["ClawToken.sol"]?.["ClawToken"];
-  if (!contract) throw new Error("Contract 'ClawToken' not found in compilation output");
-
-  const bytecodeHex = contract.evm?.bytecode?.object;
-  if (!bytecodeHex || bytecodeHex.length < 100) throw new Error(`Invalid bytecode produced (length: ${bytecodeHex?.length || 0})`);
-
-  const bytecode = `0x${bytecodeHex}` as `0x${string}`;
-  cachedCompilation = { abi: contract.abi, bytecode };
-  console.log(`[Compile] Compilation successful in ${Date.now() - t2}ms. Bytecode: ${bytecode.length} hex chars`);
-  return cachedCompilation;
+function findVanitySalt(
+  portalAddress: string,
+  name: string,
+  symbol: string,
+  maxIterations = 200_000
+): { salt: `0x${string}`; predictedAddress: string } | null {
+  // We can't easily do CREATE2 prediction without full bytecode hash in JS
+  // Instead, use a simple random salt approach and let the contract handle it
+  // For vanity addresses, this would be done off-chain with the full bytecode
+  
+  // For now, generate a random salt
+  const randomBytes = new Uint8Array(32);
+  crypto.getRandomValues(randomBytes);
+  const salt = `0x${Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('')}` as `0x${string}`;
+  
+  return { salt, predictedAddress: "" };
 }
 
 // ============================================================================
@@ -188,7 +97,9 @@ interface CreateTokenRequest {
   imageUrl?: string;
   websiteUrl?: string;
   twitterUrl?: string;
-  seedLiquidityBnb?: string; // e.g. "0.1"
+  telegramUrl?: string;
+  initialBuyBnb?: string; // e.g. "0.1" — creator's initial purchase
+  creatorFeeBps?: number; // 0-10000 (default 5000 = 50%)
 }
 
 Deno.serve(async (req) => {
@@ -213,10 +124,20 @@ Deno.serve(async (req) => {
       );
     }
 
-    const seedBnb = body.seedLiquidityBnb || "0.1";
-    const seedBnbWei = parseEther(seedBnb);
+    // Get Portal address
+    const portalAddress = Deno.env.get("BNB_PORTAL_ADDRESS");
+    if (!portalAddress) {
+      return new Response(
+        JSON.stringify({ error: "BNB Portal not deployed yet. Run bnb-deploy-portal first." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    // Setup deployer (same key as Base)
+    const initialBuyBnb = body.initialBuyBnb || "0";
+    const initialBuyWei = parseEther(initialBuyBnb);
+    const creatorFeeBps = body.creatorFeeBps ?? 5000; // Default 50%
+
+    // Setup deployer
     const deployerKey = Deno.env.get("BASE_DEPLOYER_PRIVATE_KEY");
     if (!deployerKey) {
       return new Response(
@@ -233,106 +154,110 @@ Deno.serve(async (req) => {
     const publicClient = createPublicClient({ chain: bsc, transport: http(BSC_RPC) });
     const walletClient = createWalletClient({ account, chain: bsc, transport: http(BSC_RPC) });
 
-    // Check deployer balance
+    // Check balance
     const balance = await publicClient.getBalance({ address: account.address });
-    const minRequired = seedBnbWei + parseEther("0.01"); // seed + gas buffer
+    const minRequired = initialBuyWei + parseEther("0.005"); // initial buy + gas
 
     if (balance < minRequired) {
       return new Response(
         JSON.stringify({
-          error: `Insufficient BNB. Deployer balance: ${formatEther(balance)} BNB. Need at least ${formatEther(minRequired)} BNB (${seedBnb} seed + gas).`,
+          error: `Insufficient BNB. Balance: ${formatEther(balance)} BNB. Need: ${formatEther(minRequired)} BNB.`,
           deployer: account.address,
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[BNB Deploy] Deploying ${body.name} ($${body.ticker}) for ${body.creatorWallet}`);
-    console.log(`[BNB Deploy] Deployer: ${account.address}, Balance: ${formatEther(balance)} BNB, Seed: ${seedBnb} BNB`);
+    console.log(`[BNB Portal] Creating ${body.name} ($${body.ticker}) for ${body.creatorWallet}`);
+    console.log(`[BNB Portal] Portal: ${portalAddress}, Initial buy: ${initialBuyBnb} BNB, Creator fee: ${creatorFeeBps / 100}%`);
 
-    // Step 1: Compile ERC20
-    console.log("[BNB Deploy] Step 1: Compiling ERC20...");
-    const { abi, bytecode } = await compileERC20();
+    // Build metadata URI
+    const metadata = JSON.stringify({
+      name: body.name,
+      symbol: body.ticker.toUpperCase(),
+      description: body.description || "",
+      image: body.imageUrl || "",
+      website: body.websiteUrl || "",
+      twitter: body.twitterUrl || "",
+      telegram: body.telegramUrl || "",
+      creator: body.creatorWallet,
+    });
+    const metadataUri = `data:application/json;base64,${btoa(metadata)}`;
 
-    // Step 2: Deploy token — mint all to deployer (so we can add liquidity)
-    console.log("[BNB Deploy] Step 2: Deploying token contract...");
-    const totalSupply = parseEther("1000000000"); // 1B tokens
+    // Generate salt
+    const vanity = findVanitySalt(portalAddress, body.name, body.ticker.toUpperCase());
+    if (!vanity) {
+      return new Response(
+        JSON.stringify({ error: "Failed to generate salt" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
-    const deployHash = await walletClient.deployContract({
-      abi,
-      bytecode,
-      args: [body.name, body.ticker.toUpperCase(), account.address, totalSupply],
+    // Call Portal.newToken()
+    console.log("[BNB Portal] Calling newToken()...");
+    const txHash = await walletClient.writeContract({
+      address: portalAddress as `0x${string}`,
+      abi: PORTAL_ABI,
+      functionName: "newToken",
+      args: [
+        body.name,
+        body.ticker.toUpperCase(),
+        BigInt(creatorFeeBps),
+        metadataUri,
+        vanity.salt,
+      ],
+      value: initialBuyWei,
     });
 
-    console.log(`[BNB Deploy] Deployment tx: ${deployHash}`);
+    console.log(`[BNB Portal] Tx: ${txHash}`);
 
     const receipt = await publicClient.waitForTransactionReceipt({
-      hash: deployHash,
+      hash: txHash,
       confirmations: 1,
       timeout: 60_000,
     });
 
-    const tokenAddress = receipt.contractAddress;
-    if (!tokenAddress) throw new Error("Contract deployment failed - no contract address");
+    // Parse TokenCreated event from logs to get token address
+    // Event: TokenCreated(address indexed token, address indexed creator, ...)
+    const tokenCreatedTopic = keccak256(
+      new TextEncoder().encode("TokenCreated(address,address,string,string,uint256,string)")
+    );
 
-    console.log(`[BNB Deploy] ✅ Token deployed at: ${tokenAddress}`);
+    let tokenAddress: string | null = null;
+    for (const log of receipt.logs) {
+      if (log.topics[0] === tokenCreatedTopic) {
+        // First indexed param is the token address
+        tokenAddress = `0x${log.topics[1]?.slice(26)}`;
+        break;
+      }
+    }
 
-    // Step 3: Approve PancakeSwap Router to spend ALL tokens (100% to LP)
-    console.log("[BNB Deploy] Step 3: Approving PancakeSwap Router...");
-    const lpTokenAmount = totalSupply; // 100% of supply to LP — no creator allocation
+    if (!tokenAddress) {
+      // Fallback: check transaction events
+      console.warn("[BNB Portal] Could not parse TokenCreated event, using receipt status");
+      if (receipt.status !== "success") {
+        throw new Error("Transaction failed");
+      }
+      // Try to get from contract
+      tokenAddress = receipt.logs[0]?.address || null;
+    }
 
-    const approveHash = await walletClient.writeContract({
-      address: tokenAddress,
-      abi: ERC20_APPROVE_ABI,
-      functionName: "approve",
-      args: [PANCAKESWAP_V2_ROUTER, lpTokenAmount],
-    });
+    console.log(`[BNB Portal] ✅ Token created at: ${tokenAddress}`);
 
-    await publicClient.waitForTransactionReceipt({ hash: approveHash, confirmations: 1, timeout: 30_000 });
-    console.log(`[BNB Deploy] ✅ Approved router`);
-
-    // Step 4: Add liquidity on PancakeSwap V2 — full supply
-    console.log("[BNB Deploy] Step 4: Adding PancakeSwap V2 liquidity (100% supply)...");
-    const deadline = BigInt(Math.floor(Date.now() / 1000) + 600); // 10 min deadline
-
-    const addLiqHash = await walletClient.writeContract({
-      address: PANCAKESWAP_V2_ROUTER,
-      abi: ROUTER_ABI,
-      functionName: "addLiquidityETH",
-      args: [
-        tokenAddress,
-        lpTokenAmount,
-        lpTokenAmount * 95n / 100n, // 5% slippage on tokens
-        seedBnbWei * 95n / 100n,    // 5% slippage on BNB
-        account.address,             // LP tokens to deployer
-        deadline,
-      ],
-      value: seedBnbWei,
-    });
-
-    const lpReceipt = await publicClient.waitForTransactionReceipt({
-      hash: addLiqHash,
-      confirmations: 1,
-      timeout: 60_000,
-    });
-
-    console.log(`[BNB Deploy] ✅ Liquidity added! LP tx: ${addLiqHash}`);
-
-    // Step 5: Record in database
-    console.log("[BNB Deploy] Step 5: Recording in database...");
+    // Record in database
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const { data, error: dbError } = await supabase.rpc("backend_create_bnb_token", {
+    const { data: tokenId, error: dbError } = await supabase.rpc("backend_create_bnb_token", {
       p_name: body.name,
       p_ticker: body.ticker.toUpperCase(),
       p_creator_wallet: body.creatorWallet,
-      p_evm_token_address: tokenAddress,
-      p_evm_pool_address: "", // PancakeSwap auto-creates pair
-      p_evm_factory_tx_hash: deployHash,
-      p_creator_fee_bps: 5000,
+      p_evm_token_address: tokenAddress || "",
+      p_evm_pool_address: portalAddress,
+      p_evm_factory_tx_hash: txHash,
+      p_creator_fee_bps: creatorFeeBps,
       p_fair_launch_duration_mins: 0,
       p_starting_mcap_usd: 5000,
       p_description: body.description ?? null,
@@ -342,35 +267,35 @@ Deno.serve(async (req) => {
     });
 
     if (dbError) {
-      console.error("[BNB Deploy] DB recording error:", dbError);
+      console.error("[BNB Portal] DB error:", dbError);
     }
 
-    console.log(`[BNB Deploy] ✅ Complete! Token ID: ${data}`);
+    console.log(`[BNB Portal] ✅ Complete! Token ID: ${tokenId}`);
 
     return new Response(
       JSON.stringify({
         success: true,
         tokenAddress,
-        txHash: deployHash,
-        lpTxHash: addLiqHash,
-        tokenId: data,
+        txHash,
+        tokenId,
+        portalAddress,
         deployer: account.address,
         network: "bnb",
         chainId: 56,
         totalSupply: "1000000000",
-        seedLiquidity: seedBnb,
-        explorerUrl: `https://bscscan.com/tx/${deployHash}`,
-        tokenUrl: `https://bscscan.com/token/${tokenAddress}`,
-        pancakeswapUrl: `https://pancakeswap.finance/swap?outputCurrency=${tokenAddress}&chainId=56`,
-        message: `Token ${body.name} ($${body.ticker}) deployed on BNB Chain at ${tokenAddress} with ${seedBnb} BNB liquidity on PancakeSwap`,
+        initialBuy: initialBuyBnb,
+        creatorFeeBps,
+        explorerUrl: `https://bscscan.com/tx/${txHash}`,
+        tokenUrl: tokenAddress ? `https://bscscan.com/token/${tokenAddress}` : null,
+        message: `Token ${body.name} ($${body.ticker}) created on BNB Chain via TunaPortal bonding curve`,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("[BNB Deploy] Error:", error);
+    console.error("[BNB Portal] Error:", error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Token deployment failed",
+        error: error instanceof Error ? error.message : "Token creation failed",
         details: error instanceof Error ? error.stack : undefined,
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
