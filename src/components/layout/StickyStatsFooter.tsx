@@ -105,7 +105,7 @@ export function StickyStatsFooter() {
 
   // Close dropdowns on outside click
   useEffect(() => {
-    if (!regionOpen && !launchpadOpen) return;
+    if (!regionOpen && !launchpadOpen && !walletTrackerOpen) return;
     const handleClick = (e: MouseEvent) => {
       if (regionOpen && dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setRegionOpen(false);
@@ -113,10 +113,13 @@ export function StickyStatsFooter() {
       if (launchpadOpen && lpDropdownRef.current && !lpDropdownRef.current.contains(e.target as Node)) {
         setLaunchpadOpen(false);
       }
+      if (walletTrackerOpen && wtDropdownRef.current && !wtDropdownRef.current.contains(e.target as Node)) {
+        setWalletTrackerOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [regionOpen, launchpadOpen]);
+  }, [regionOpen, launchpadOpen, walletTrackerOpen]);
 
   const handleRefresh = (e: React.MouseEvent) => {
     e.stopPropagation();
