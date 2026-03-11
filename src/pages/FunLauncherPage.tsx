@@ -74,11 +74,15 @@ export default function FunLauncherPage() {
   const funNavigate = useNavigate();
 
   // Redirect legacy ?create=1 to dedicated create page
+  const shouldRedirectToCreate = searchParams.get("create") === "1";
   useEffect(() => {
-    if (searchParams.get("create") === "1") {
+    if (shouldRedirectToCreate) {
       funNavigate("/launchpad/create", { replace: true });
     }
-  }, [searchParams, funNavigate]);
+  }, [shouldRedirectToCreate, funNavigate]);
+
+  // Don't render anything while redirecting
+  if (shouldRedirectToCreate) return null;
 
   const [claimsPage, setClaimsPage] = useState(1);
   const [creatorFeesPage, setCreatorFeesPage] = useState(1);
