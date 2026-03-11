@@ -960,6 +960,7 @@ export default function FunTokenDetailPage() {
                   </div>
                 </div>
               )}
+              <PnlSimulator />
               <CommentsSection />
             </div>
           </div>
