@@ -479,7 +479,8 @@ export function KingOfTheHill() {
   const scroll = (dir: "left" | "right") => {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollBy({ left: dir === "left" ? -290 : 290, behavior: "smooth" });
+    const cardWidth = el.querySelector(':scope > *')?.getBoundingClientRect().width ?? el.clientWidth;
+    el.scrollBy({ left: dir === "left" ? -cardWidth - 12 : cardWidth + 12, behavior: "smooth" });
   };
 
   return (
