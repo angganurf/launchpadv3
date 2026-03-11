@@ -4,6 +4,7 @@ import { XIcon } from "@/components/icons/XIcon";
 import { useState, useEffect, useCallback } from "react";
 import { SolPriceDisplay } from "./SolPriceDisplay";
 import { EthPriceDisplay } from "./EthPriceDisplay";
+import { BnbPriceDisplay } from "./BnbPriceDisplay";
 import { useChain } from "@/contexts/ChainContext";
 import { ChainSwitcher } from "@/components/launchpad/ChainSwitcher";
 import { usePanelNav } from "@/hooks/usePanelNav";
@@ -88,7 +89,7 @@ export function AppHeader({ onMobileMenuOpen }: TopBarProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-1.5 ml-auto">
-        {chain === 'base' ? <EthPriceDisplay /> : <SolPriceDisplay />}
+        {chain === 'bnb' ? <BnbPriceDisplay /> : chain === 'base' ? <EthPriceDisplay /> : <SolPriceDisplay />}
 
         <a
           href="https://x.com/saturntrade"

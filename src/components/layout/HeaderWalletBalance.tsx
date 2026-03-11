@@ -11,10 +11,14 @@ import { useToast } from "@/hooks/use-toast";
 import { SettingsModal } from "@/components/settings/SettingsModal";
 import { AccountSecurityModal } from "@/components/settings/AccountSecurityModal";
 import { PortfolioModal } from "@/components/portfolio/PortfolioModal";
+import { useChain } from "@/contexts/ChainContext";
+import { useEvmWallet } from "@/hooks/useEvmWallet";
 
 function HeaderWalletBalanceInner() {
   const { isAuthenticated, logout } = useAuth();
   const { walletAddress: embeddedAddress, getBalance } = useSolanaWalletWithPrivy();
+  const { chain } = useChain();
+  const evmWallet = useEvmWallet();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
@@ -36,20 +40,53 @@ function HeaderWalletBalanceInner() {
   }, [embeddedAddress, settingsOpen]);
 
   useEffect(() => {
-    if (!embeddedAddress) return;
-    let cancelled = false;
-    const fetchBal = async () => {
-      try {
-        const bal = await getBalance();
-        if (!cancelled) setBalance(bal);
-      } catch (e) {
-        console.warn("Header balance fetch failed:", e);
+    if (chain === 'bnb') {
+      // Fetch BNB balance via BSC RPC for EVM wallet
+      if (!evmWallet.isConnected || !evmWallet.address) {
+        setBalance(null);
+        return;
       }
-    };
-    fetchBal();
-    const interval = setInterval(fetchBal, 30000);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, [embeddedAddress, getBalance]);
+      let cancelled = false;
+      const fetchBnbBal = async () => {
+        try {
+          const res = await fetch('https://bsc-dataseed.binance.org', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jsonrpc: '2.0', method: 'eth_getBalance',
+              params: [evmWallet.address, 'latest'], id: 1,
+            }),
+          });
+          const data = await res.json();
+          if (data?.result && !cancelled) {
+            const wei = BigInt(data.result);
+            const bnb = Number(wei) / 1e18;
+            setBalance(bnb);
+          }
+        } catch (e) {
+          console.warn("BNB balance fetch failed:", e);
+        }
+      };
+      fetchBnbBal();
+      const interval = setInterval(fetchBnbBal, 30000);
+      return () => { cancelled = true; clearInterval(interval); };
+    } else {
+      // SOL balance
+      if (!embeddedAddress) return;
+      let cancelled = false;
+      const fetchBal = async () => {
+        try {
+          const bal = await getBalance();
+          if (!cancelled) setBalance(bal);
+        } catch (e) {
+          console.warn("Header balance fetch failed:", e);
+        }
+      };
+      fetchBal();
+      const interval = setInterval(fetchBal, 30000);
+      return () => { cancelled = true; clearInterval(interval); };
+    }
+  }, [embeddedAddress, getBalance, chain, evmWallet.isConnected, evmWallet.address]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -64,11 +101,15 @@ function HeaderWalletBalanceInner() {
 
   if (!isAuthenticated || !embeddedAddress) return null;
 
+  const isBnb = chain === 'bnb';
+  const displayAddress = isBnb && evmWallet.address ? evmWallet.address : embeddedAddress;
+  const currencyLabel = isBnb ? 'BNB' : 'SOL';
+
   const handleCopy = async () => {
-    const ok = await copyToClipboard(embeddedAddress);
+    const ok = await copyToClipboard(displayAddress);
     if (ok) {
       setCopied(true);
-      toast({ title: "Address copied", description: "Send SOL to this address to top up" });
+      toast({ title: "Address copied", description: `Send ${currencyLabel} to this address to top up` });
       setTimeout(() => setCopied(false), 2000);
     }
     setMenuOpen(false);
@@ -91,8 +132,8 @@ function HeaderWalletBalanceInner() {
           <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-foreground font-mono">
             {balance !== null
-              ? `${balance.toFixed(3)} SOL`
-              : `${embeddedAddress.slice(0, 4)}..${embeddedAddress.slice(-4)}`}
+              ? `${balance.toFixed(3)} ${currencyLabel}`
+              : `${displayAddress.slice(0, 4)}..${displayAddress.slice(-4)}`}
           </span>
           <ChevronDown className="h-3 w-3 text-muted-foreground" />
         </button>
