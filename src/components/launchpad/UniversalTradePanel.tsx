@@ -513,12 +513,6 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
                   <span>Slippage</span>
                   <span className="text-foreground/70">{slippage}%</span>
                 </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Route</span>
-                  <span className="text-accent-foreground">
-                    {useJupiterRoute ? 'Jupiter' : jupiterQuoteFailed ? 'PumpPortal (fallback)' : 'PumpPortal'}
-                  </span>
-                </div>
               </div>
             )}
           </CollapsibleContent>
