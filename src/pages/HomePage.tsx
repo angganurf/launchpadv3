@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LaunchpadLayout } from "@/components/layout/LaunchpadLayout";
 import { KingOfTheHill } from "@/components/launchpad/KingOfTheHill";
 import { JustLaunched } from "@/components/launchpad/JustLaunched";
@@ -251,6 +251,17 @@ function HotPairPill({ token }: { token: CodexPairToken }) {
 }
 
 export default function HomePage() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname !== "/") return;
+    const createParam = new URLSearchParams(location.search).get("create");
+    if (createParam === "1") {
+      navigate("/launchpad?create=1", { replace: true });
+    }
+  }, [location.pathname, location.search, navigate]);
+
   const { newPairs: codexNewPairs, completing: codexCompleting, graduated: codexGraduated, isLoading: codexLoading } = useCodexNewPairs(SOLANA_NETWORK_ID);
 
   const limitedNewPairs = useMemo(() => (codexNewPairs || []).slice(0, 5), [codexNewPairs]);
@@ -376,7 +387,7 @@ export default function HomePage() {
                 Open Terminal
               </Link>
               <Link
-                to="/trade?create=1"
+                to="/launchpad?create=1"
                 className="group flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm
                            text-foreground border border-border/60 bg-card/20 backdrop-blur-sm
                            transition-all duration-300 hover:scale-105 hover:border-primary/50
