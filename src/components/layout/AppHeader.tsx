@@ -89,7 +89,7 @@ export function AppHeader({ onMobileMenuOpen }: TopBarProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-1.5 ml-auto">
-        {chain === 'base' ? <EthPriceDisplay /> : <SolPriceDisplay />}
+        {chain === 'bnb' ? <BnbPriceDisplay /> : chain === 'base' ? <EthPriceDisplay /> : <SolPriceDisplay />}
 
         <a
           href="https://x.com/saturntrade"

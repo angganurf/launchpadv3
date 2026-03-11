@@ -17,6 +17,8 @@ import { useEvmWallet } from "@/hooks/useEvmWallet";
 function HeaderWalletBalanceInner() {
   const { isAuthenticated, logout } = useAuth();
   const { walletAddress: embeddedAddress, getBalance } = useSolanaWalletWithPrivy();
+  const { chain } = useChain();
+  const evmWallet = useEvmWallet();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
