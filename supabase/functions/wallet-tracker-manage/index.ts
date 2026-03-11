@@ -107,12 +107,16 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (!existing) {
-          const shortId = user_profile_id.replace(/-/g, "").slice(0, 12);
-          await supabase.from("profiles").insert({
+          const uniqueSuffix = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+          const { error: profileErr } = await supabase.from("profiles").insert({
             id: user_profile_id,
-            username: `wallet_${shortId}`,
-            display_name: `Tracker ${shortId}`,
+            username: `trk_${uniqueSuffix}`,
+            display_name: `Tracker`,
           });
+          if (profileErr) {
+            console.error("Failed to create profile for tracker:", profileErr);
+            throw profileErr;
+          }
         }
 
         const { data, error } = await supabase.from("tracked_wallets").insert({
