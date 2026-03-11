@@ -30,8 +30,6 @@ const VanityAdminPage = lazyWithRetry(() => import("./pages/VanityAdminPage"));
 const LaunchpadTemplatePage = lazyWithRetry(() => import("./pages/LaunchpadTemplatePage"));
 const InvestigateTokenPage = lazyWithRetry(() => import("./pages/InvestigateTokenPage"));
 const TradePage = lazyWithRetry(() => import("./pages/TradePage"));
-const ApiDocsPage = lazyWithRetry(() => import("./pages/ApiDocsPage"));
-const ApiDashboardPage = lazyWithRetry(() => import("./pages/ApiDashboardPage"));
 const WidgetPage = lazyWithRetry(() => import("./pages/WidgetPage"));
 const ClawBookPage = lazyWithRetry(() => import("./pages/ClawBookPage"));
 const SubClawPage = lazyWithRetry(() => import("./pages/SubClawPage"));
