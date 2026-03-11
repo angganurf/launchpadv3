@@ -2082,32 +2082,19 @@ export function TokenLauncher({ onLaunchSuccess, onShowResult, bare = false, def
               </button>
             ) : (
               <>
-                <div
-                  className="flex items-center justify-between p-4 rounded-xl transition-all duration-200"
-                  style={{
-                    background: "rgba(0,0,0,0.4)",
-                    backdropFilter: "blur(20px)",
-                    border: "1px solid rgba(139,92,246,0.2)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)",
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: "#10b981", boxShadow: "0 0 8px rgba(16,185,129,0.5)" }} />
-                    <span className="text-sm font-mono font-semibold tracking-tight" style={{ background: "linear-gradient(90deg, #a78bfa, #22d3ee)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                <div className="flex items-center justify-between p-3.5 rounded-xl phantom-wallet-pill">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#22c55e", boxShadow: "0 0 8px rgba(34,197,94,0.5)" }} />
+                    <span className="text-sm font-mono font-semibold tracking-tight text-white/90">
                       {phantomWallet.address?.slice(0, 4)}...{phantomWallet.address?.slice(-4)}
                     </span>
                     {phantomWallet.balance !== null && (
-                      <span className="text-xs font-mono text-[#94A3B8]">{phantomWallet.balance.toFixed(3)} SOL</span>
+                      <span className="text-xs font-mono text-white/35">{phantomWallet.balance.toFixed(3)} SOL</span>
                     )}
                   </div>
                   <button
                     onClick={phantomWallet.disconnect}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-[1.03] cursor-pointer"
-                    style={{
-                      background: "rgba(239,68,68,0.1)",
-                      color: "#fca5a5",
-                      border: "1px solid rgba(239,68,68,0.2)",
-                    }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer phantom-disconnect-btn"
                   >
                     Disconnect
                   </button>
