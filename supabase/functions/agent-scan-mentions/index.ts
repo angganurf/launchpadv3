@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { createHmac } from "node:crypto";
+import { BRAND } from "../_shared/branding.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -105,7 +106,7 @@ async function getAuthenticatedUserId(
   return data.data?.id || null;
 }
 
-// Fetch mentions of @saturntrade using official X.com API
+// Fetch mentions of ${BRAND.twitterHandle} using official X.com API
 async function fetchMentions(
   userId: string,
   consumerKey: string,
