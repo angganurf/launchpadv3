@@ -157,10 +157,8 @@ export function StickyStatsFooter() {
   const isPunchDomain = typeof window !== "undefined" && (window.location.hostname === "punchlaunch.fun" || window.location.hostname === "www.punchlaunch.fun");
   if (pathname.startsWith("/punch") || pathname.startsWith("/punch-test") || isPunchDomain) return null;
 
-  const tokens = stats?.totalTokensLaunched ?? 0;
-  const agents = stats?.totalAgents ?? 0;
-  const feesClaimed = (stats?.totalAgentFeesEarned ?? 0).toFixed(2);
-  const agentPosts = stats?.totalAgentPosts ?? 0;
+  const tokens = 0;
+  const currentPing = pings[selectedRegion] ?? 0;
   const currentPing = pings[selectedRegion] ?? 0;
 
   const totalLpTokens = launchpadStats?.reduce((s, lp) => s + lp.total, 0) ?? 0;
