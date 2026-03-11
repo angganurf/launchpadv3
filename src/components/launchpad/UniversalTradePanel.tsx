@@ -242,8 +242,9 @@ export function UniversalTradePanel({ token, userTokenBalance: externalTokenBala
   const { data: rugCheck, isLoading: rugLoading } = useRugCheck(token.mint_address);
 
   const safetyChecks = [
-    { label: "ff Launched", passed: token.graduated !== false, loading: false },
-    { label: "Authority revoked", passed: rugCheck?.mintAuthorityRevoked ?? null, loading: rugLoading },
+    { label: "Launched", passed: token.graduated !== false, loading: false },
+    { label: "Mint authority revoked", passed: rugCheck?.mintAuthorityRevoked ?? null, loading: rugLoading },
+    { label: "Freeze authority revoked", passed: rugCheck?.freezeAuthorityRevoked ?? null, loading: rugLoading },
     { label: "Liquidity locked", passed: rugCheck?.liquidityLocked ?? null, loading: rugLoading },
     { label: "Top 10 < 30%", passed: rugCheck ? rugCheck.topHolderPct < 30 : null, loading: rugLoading },
   ];
