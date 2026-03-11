@@ -178,8 +178,8 @@ function LivePulseSection({ newPairs, completing, graduated, loading }: {
     <section className={`${CW} mx-auto px-4 py-6`}>
       <SectionHeader icon={Zap} title="Live Pulse" linkTo="/trade" linkLabel="Launch Terminal" />
       
-      {/* Desktop: 3-column grid */}
-      <div className="hidden md:grid grid-cols-3 gap-5">
+      {/* Desktop: 3-column grid, 4 on XL */}
+      <div className="hidden md:grid md:grid-cols-3 xl:grid-cols-3 gap-4">
         <PulseColumn title="⚡ New Pairs" tokens={newPairs} loading={loading} />
         <PulseColumn title="🔥 Final Stretch" tokens={completing} loading={loading} />
         <PulseColumn title="🚀 Migrated" tokens={graduated} loading={loading} />
