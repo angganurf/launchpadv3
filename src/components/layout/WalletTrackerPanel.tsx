@@ -483,3 +483,118 @@ function ToolBtn({
     </button>
   );
 }
+
+interface WalletTrade {
+  id: string;
+  wallet_address: string;
+  token_mint: string;
+  token_name: string | null;
+  token_ticker: string | null;
+  trade_type: string;
+  sol_amount: number;
+  token_amount: number;
+  created_at: string;
+}
+
+function PanelTradesTab({ wallets, sz, f, navigate }: { wallets: any[]; sz: any; f: string; navigate: any }) {
+  const [trades, setTrades] = useState<WalletTrade[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (wallets.length === 0) return;
+    setLoading(true);
+    const addresses = wallets.map((w: any) => w.wallet_address);
+    supabase
+      .from('wallet_trades')
+      .select('*')
+      .in('wallet_address', addresses)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data) setTrades(data as WalletTrade[]);
+        setLoading(false);
+      });
+  }, [wallets]);
+
+  const getLabel = (addr: string) => {
+    const w = wallets.find((w: any) => w.wallet_address === addr);
+    return w?.wallet_label || shortAddr(addr);
+  };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", padding: "16px 0", color: "#888", fontSize: sz.fs.val }}>
+        <Loader2 style={{ width: "12px", height: "12px", animation: "spin 1s linear infinite", display: "inline-block", marginRight: "4px" }} />
+        Loading trades...
+      </div>
+    );
+  }
+
+  if (trades.length === 0) {
+    return (
+      <div style={{ textAlign: "center", padding: "16px 0", color: "#888", fontSize: sz.fs.val }}>
+        {wallets.length === 0 ? "Add wallets to see trades" : "No trades recorded yet"}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {trades.map((t) => (
+        <div
+          key={t.id}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            padding: "5px 6px",
+            borderBottom: "1px solid #1a1a1a",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "8px",
+              fontWeight: 700,
+              padding: "1px 4px",
+              borderRadius: "3px",
+              background: t.trade_type === 'buy' ? 'rgba(0,255,170,0.15)' : 'rgba(255,77,77,0.15)',
+              color: t.trade_type === 'buy' ? '#00FFAA' : '#FF4D4D',
+              flexShrink: 0,
+            }}
+          >
+            {t.trade_type === 'buy' ? 'BUY' : 'SELL'}
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: sz.fs.val, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {t.token_ticker || t.token_name || shortAddr(t.token_mint)}
+            </div>
+            <div style={{ fontSize: "7px", color: "#888" }}>{getLabel(t.wallet_address)}</div>
+          </div>
+          <div style={{ textAlign: "right", flexShrink: 0 }}>
+            <div style={{ fontSize: sz.fs.val, fontWeight: 600 }}>{t.sol_amount.toFixed(3)} SOL</div>
+            <div style={{ fontSize: "7px", color: "#aaa" }}>
+              {formatDistanceToNow(new Date(t.created_at), { addSuffix: true })}
+            </div>
+          </div>
+        </div>
+      ))}
+      <div style={{ textAlign: "center", padding: "8px 0" }}>
+        <button
+          onClick={(e: React.MouseEvent) => { e.stopPropagation(); navigate("/wallet-tracker"); }}
+          style={{
+            background: "none",
+            border: "1px solid #333",
+            borderRadius: "6px",
+            padding: "4px 12px",
+            fontSize: sz.fs.btn,
+            color: '#00FFAA',
+            cursor: "pointer",
+            fontFamily: f,
+          }}
+        >
+          View All Trades →
+        </button>
+      </div>
+    </div>
+  );
+}
