@@ -30,8 +30,6 @@ const VanityAdminPage = lazyWithRetry(() => import("./pages/VanityAdminPage"));
 const LaunchpadTemplatePage = lazyWithRetry(() => import("./pages/LaunchpadTemplatePage"));
 const InvestigateTokenPage = lazyWithRetry(() => import("./pages/InvestigateTokenPage"));
 const TradePage = lazyWithRetry(() => import("./pages/TradePage"));
-const ApiDocsPage = lazyWithRetry(() => import("./pages/ApiDocsPage"));
-const ApiDashboardPage = lazyWithRetry(() => import("./pages/ApiDashboardPage"));
 const WidgetPage = lazyWithRetry(() => import("./pages/WidgetPage"));
 const ClawBookPage = lazyWithRetry(() => import("./pages/ClawBookPage"));
 const SubClawPage = lazyWithRetry(() => import("./pages/SubClawPage"));
@@ -44,7 +42,7 @@ const AgentConnectPage = lazyWithRetry(() => import("./pages/AgentConnectPage"))
 const BagsAgentsPage = lazyWithRetry(() => import("./pages/BagsAgentsPage"));
 const TradingAgentProfilePage = lazyWithRetry(() => import("./pages/TradingAgentProfilePage"));
 const WhitepaperPage = lazyWithRetry(() => import("./pages/WhitepaperPage"));
-const ClawSDKPage = lazyWithRetry(() => import("./pages/ClawSDKPage"));
+
 const CareersPage = lazyWithRetry(() => import("./pages/CareersPage"));
 const ClawModePage = lazyWithRetry(() => import("./pages/ClawModePage"));
 const TunnelDistributePage = lazyWithRetry(() => import("./pages/TunnelDistributePage"));
@@ -139,8 +137,6 @@ const App = () => (
                      <Route path="/discover" element={<DiscoverPage />} />
                      <Route path="/profile/:identifier" element={<UserProfilePage />} />
                     <Route path="/investigate-token" element={<InvestigateTokenPage />} />
-                    <Route path="/api" element={<ApiDashboardPage />} />
-                    <Route path="/api/docs" element={<ApiDocsPage />} />
                     <Route path="/widget/:type" element={<WidgetPage />} />
                     <Route path="/agents" element={<ClawBookPage />} />
                     <Route path="/t/:ticker" element={<SubClawPage />} />
@@ -165,8 +161,10 @@ const App = () => (
                     <Route path="/partnerfees" element={<Navigate to="/admin?tab=partner-fees" replace />} />
                     <Route path="/whitepaper" element={<WhitepaperPage />} />
                     
-                     <Route path="/sdk" element={<ClawSDKPage />} />
-                     <Route path="/opentuna" element={<Navigate to="/sdk" replace />} />
+                     <Route path="/sdk" element={<Navigate to="/" replace />} />
+                     <Route path="/opentuna" element={<Navigate to="/" replace />} />
+                     <Route path="/api" element={<Navigate to="/" replace />} />
+                     <Route path="/api/docs" element={<Navigate to="/" replace />} />
                     <Route path="/careers" element={<CareersPage />} />
                     <Route path="/admin/x-bots" element={<Navigate to="/admin?tab=xbots" replace />} />
                     <Route path="/admin/follower-scan" element={<Navigate to="/admin?tab=follower-scan" replace />} />
