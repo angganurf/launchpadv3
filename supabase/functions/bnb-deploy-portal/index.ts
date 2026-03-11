@@ -312,8 +312,8 @@ Deno.serve(async (req) => {
     }
 
     // Compile
-    console.log("[Portal Deploy] Compiling TunaPortal...");
-    const { abi, bytecode } = await compileTunaPortal();
+    console.log("[Portal Deploy] Compiling SaturnPortal...");
+    const { abi, bytecode } = await compileSaturnPortal();
 
     // Deploy
     console.log("[Portal Deploy] Deploying TunaPortal...");
