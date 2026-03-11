@@ -119,10 +119,13 @@ function SectionHeader({ icon: Icon, title, linkTo, linkLabel }: {
 
 export { SectionHeader };
 
+/* ── Content wrapper class — wider on large screens ── */
+const CONTENT_MAX = "max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1800px]";
+
 /* ── Section Divider ── */
 function SectionDivider() {
   return (
-    <div className="max-w-7xl mx-auto px-4">
+    <div className={`${CONTENT_MAX} mx-auto px-4`}>
       <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
     </div>
   );
