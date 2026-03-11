@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { useMemo, useRef, useState, useCallback, useEffect, lazy, Suspense } from "react";
 import saturnLogo from "@/assets/saturn-logo.png";
+import heroTerminalMockup from "@/assets/hero-terminal-mockup.png";
+import heroLaunchMockup from "@/assets/hero-launch-mockup.png";
 
 // Lazy load heavy below-fold section components
 const AlphaSection = lazy(() => import("@/components/home/AlphaSection"));
@@ -277,21 +279,21 @@ export default function HomePage() {
   return (
     <LaunchpadLayout hideFooter noPadding>
       <div className="relative z-10">
-        {/* ═══ Hero Section — Compact & Immersive ═══ */}
+        {/* ═══ Hero Section — Compact, Immersive, Product-Teasing ═══ */}
         <section
-          className="relative overflow-hidden flex items-center justify-center py-12 sm:py-16 md:py-20 lg:py-24"
+          className="relative overflow-hidden flex items-center justify-center py-8 sm:py-10 md:py-14 lg:py-16 min-h-[50vh] max-h-[65vh]"
           style={{ background: "radial-gradient(ellipse 80% 60% at 50% 40%, hsl(220 60% 8%) 0%, hsl(220 40% 3%) 60%, hsl(0 0% 0%) 100%)" }}
         >
           {/* Ambient glow orbs */}
           <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(ellipse, hsl(72 100% 50% / 0.04) 0%, transparent 70%)" }} />
+            style={{ background: "radial-gradient(ellipse, hsl(72 100% 50% / 0.05) 0%, transparent 70%)" }} />
           <div className="absolute top-[30%] left-[20%] w-[300px] h-[300px] rounded-full pointer-events-none animate-pulse"
             style={{ background: "radial-gradient(circle, hsl(200 80% 50% / 0.03) 0%, transparent 70%)", animationDuration: "6s" }} />
           <div className="absolute top-[20%] right-[15%] w-[250px] h-[250px] rounded-full pointer-events-none animate-pulse"
             style={{ background: "radial-gradient(circle, hsl(280 60% 50% / 0.025) 0%, transparent 70%)", animationDuration: "8s" }} />
 
           {/* Orbit ring decoration */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] sm:w-[600px] sm:h-[600px] pointer-events-none opacity-[0.04]">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] sm:w-[550px] sm:h-[550px] pointer-events-none opacity-[0.04]">
             <div className="absolute inset-0 rounded-full border border-primary" style={{ transform: "rotateX(65deg)" }} />
             <div className="absolute inset-[40px] rounded-full border border-primary/60" style={{ transform: "rotateX(65deg) rotateZ(15deg)" }} />
           </div>
@@ -303,6 +305,8 @@ export default function HomePage() {
               { x: "85%", y: "30%", size: "1.5px", dur: "15s", delay: "2s" },
               { x: "25%", y: "70%", size: "1px", dur: "18s", delay: "5s" },
               { x: "70%", y: "60%", size: "2px", dur: "14s", delay: "3s" },
+              { x: "50%", y: "15%", size: "1.5px", dur: "16s", delay: "1s" },
+              { x: "15%", y: "55%", size: "1px", dur: "20s", delay: "7s" },
             ].map((p, i) => (
               <div
                 key={i}
@@ -318,25 +322,58 @@ export default function HomePage() {
             ))}
           </div>
 
+          {/* ── Flanking Product Screenshots ── */}
+          {/* Left: Trading Terminal mockup */}
+          <div
+            className="absolute left-[-8%] top-[8%] w-[42%] max-w-[520px] pointer-events-none hidden lg:block"
+            style={{
+              transform: "perspective(1200px) rotateY(12deg) rotateX(-2deg)",
+              opacity: 0.3,
+              filter: "blur(6px)",
+              maskImage: "linear-gradient(to right, transparent 0%, black 15%, black 70%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 15%, black 70%, transparent 100%)",
+            }}
+          >
+            <div className="relative rounded-xl overflow-hidden border border-primary/10 shadow-[0_0_40px_hsl(72_100%_50%/0.06)]">
+              <img src={heroTerminalMockup} alt="" className="w-full h-auto" loading="eager" />
+            </div>
+          </div>
+
+          {/* Right: Token Launch mockup */}
+          <div
+            className="absolute right-[-8%] top-[12%] w-[40%] max-w-[500px] pointer-events-none hidden lg:block"
+            style={{
+              transform: "perspective(1200px) rotateY(-12deg) rotateX(-2deg)",
+              opacity: 0.3,
+              filter: "blur(6px)",
+              maskImage: "linear-gradient(to left, transparent 0%, black 15%, black 70%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to left, transparent 0%, black 15%, black 70%, transparent 100%)",
+            }}
+          >
+            <div className="relative rounded-xl overflow-hidden border border-primary/10 shadow-[0_0_40px_hsl(72_100%_50%/0.06)]">
+              <img src={heroLaunchMockup} alt="" className="w-full h-auto" loading="eager" />
+            </div>
+          </div>
+
           {/* Gradient fade to content below */}
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent pointer-events-none" />
 
           {/* Hero Content */}
-          <div className="relative z-10 w-full max-w-4xl mx-auto px-4 text-center">
+          <div className="relative z-10 w-full max-w-3xl mx-auto px-4 text-center">
             {/* Saturn Logo */}
-            <div className="relative mx-auto w-16 h-16 sm:w-20 sm:h-20 mb-5 animate-fade-in">
-              <div className="absolute inset-[-12px] rounded-full pointer-events-none"
-                style={{ background: "radial-gradient(circle, hsl(38 90% 50% / 0.15) 0%, transparent 70%)" }} />
+            <div className="relative mx-auto w-14 h-14 sm:w-16 sm:h-16 mb-4 animate-fade-in">
+              <div className="absolute inset-[-10px] rounded-full pointer-events-none"
+                style={{ background: "radial-gradient(circle, hsl(38 90% 50% / 0.2) 0%, transparent 70%)" }} />
               <img
                 src={saturnLogo}
                 alt="Saturn Trade"
-                className="w-full h-full relative z-10 drop-shadow-[0_0_30px_hsl(38_90%_50%/0.35)]"
+                className="w-full h-full relative z-10 drop-shadow-[0_0_30px_hsl(38_90%_50%/0.4)]"
               />
             </div>
 
             {/* Title */}
             <h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-3 animate-fade-in"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-2 animate-fade-in"
               style={{
                 background: "linear-gradient(135deg, hsl(48 96% 53%) 0%, hsl(84 81% 44%) 100%)",
                 WebkitBackgroundClip: "text",
@@ -351,7 +388,7 @@ export default function HomePage() {
 
             {/* Subtitle */}
             <p
-              className="text-base sm:text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto mb-2 font-medium animate-fade-in"
+              className="text-sm sm:text-base md:text-lg text-foreground/80 max-w-xl mx-auto mb-1.5 font-medium animate-fade-in"
               style={{ animationDelay: "0.15s", animationFillMode: "both" }}
             >
               The fastest AI-powered trading terminal on Solana
@@ -359,7 +396,7 @@ export default function HomePage() {
 
             {/* Description */}
             <p
-              className="text-xs sm:text-sm text-muted-foreground/60 max-w-xl mx-auto mb-7 leading-relaxed animate-fade-in"
+              className="text-[11px] sm:text-xs text-muted-foreground/60 max-w-lg mx-auto mb-5 leading-relaxed animate-fade-in"
               style={{ animationDelay: "0.2s", animationFillMode: "both" }}
             >
               Lightning-fast execution, built-in launchpad, referral rewards, smart alpha tracking, and AI-powered agents — all in one terminal.
@@ -367,12 +404,12 @@ export default function HomePage() {
 
             {/* CTA Buttons */}
             <div
-              className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap mb-7 animate-fade-in"
+              className="flex items-center justify-center gap-3 flex-wrap mb-5 animate-fade-in"
               style={{ animationDelay: "0.25s", animationFillMode: "both" }}
             >
               <Link
                 to="/trade"
-                className="group relative flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm text-background
+                className="group relative flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm text-background
                            transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_hsl(72_100%_50%/0.3)]
                            active:scale-[0.97]"
                 style={{
@@ -388,7 +425,7 @@ export default function HomePage() {
               </Link>
               <Link
                 to="/launchpad"
-                className="group flex items-center gap-2.5 px-7 py-3 rounded-full font-bold text-sm
+                className="group flex items-center gap-2 px-6 py-2.5 rounded-full font-bold text-sm
                            text-foreground border border-border/60 bg-card/20 backdrop-blur-sm
                            transition-all duration-300 hover:scale-105 hover:border-primary/50
                            hover:bg-primary/5 hover:shadow-[0_0_30px_hsl(72_100%_50%/0.1)]
@@ -401,7 +438,7 @@ export default function HomePage() {
 
             {/* Feature Badges */}
             <div
-              className="flex items-center justify-center gap-2.5 sm:gap-3 flex-wrap mb-6 animate-fade-in"
+              className="flex items-center justify-center gap-2 flex-wrap mb-4 animate-fade-in"
               style={{ animationDelay: "0.35s", animationFillMode: "both" }}
             >
               {[
@@ -412,26 +449,26 @@ export default function HomePage() {
               ].map(({ icon: FIcon, label }) => (
                 <div
                   key={label}
-                  className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                  className="group flex items-center gap-1.5 px-2.5 py-1 rounded-full
                              bg-card/10 backdrop-blur-md border border-border/20
-                             text-[11px] sm:text-xs text-muted-foreground/80
+                             text-[10px] sm:text-[11px] text-muted-foreground/80
                              transition-all duration-300
                              hover:border-primary/30 hover:bg-primary/5 hover:-translate-y-0.5
                              hover:shadow-[0_8px_24px_hsl(72_100%_50%/0.08)]"
                 >
-                  <FIcon className="w-3.5 h-3.5 text-primary/70 group-hover:text-primary transition-colors" />
+                  <FIcon className="w-3 h-3 text-primary/70 group-hover:text-primary transition-colors" />
                   {label}
                 </div>
               ))}
             </div>
 
-            {/* Hot Pairs Teaser — above-the-fold social proof */}
+            {/* Hot Pairs Teaser */}
             {hotPairs.length > 0 && (
               <div
                 className="flex items-center justify-center gap-2 flex-wrap animate-fade-in"
                 style={{ animationDelay: "0.45s", animationFillMode: "both" }}
               >
-                <span className="text-[10px] text-muted-foreground/40 uppercase tracking-widest font-semibold mr-1">Trending</span>
+                <span className="text-[9px] text-muted-foreground/40 uppercase tracking-widest font-semibold mr-1">Trending</span>
                 {hotPairs.map(t => (
                   <HotPairPill key={t.address} token={t} />
                 ))}
