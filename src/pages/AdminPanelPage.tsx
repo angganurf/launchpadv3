@@ -100,6 +100,9 @@ export default function AdminPanelPage() {
                 placeholder="Enter admin password"
               />
             </div>
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
             <Button className="w-full" onClick={handleLogin}>
               <Lock className="w-4 h-4 mr-2" />
               Unlock
