@@ -389,7 +389,9 @@ export function WalletTrackerPanel({
                   {w.balance !== null ? `${w.balance.toFixed(2)}` : "—"}
                 </span>
                 <span style={{ fontSize: sz.fs.label, color: muted, textAlign: "right" }}>
-                  {formatDistanceToNow(new Date(w.lastActive || w.created_at), { addSuffix: false }).replace("about ", "")}
+                  {w.lastActive
+                    ? formatDistanceToNow(new Date(w.lastActive), { addSuffix: false }).replace("about ", "")
+                    : "—"}
                 </span>
                 <button
                   onClick={() => handleRemove(w.id)}
