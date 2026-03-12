@@ -90,6 +90,7 @@ function TokenIcon({ pair, dexScreenerUrl }: { pair: CodexPairToken; dexScreener
 }
 
 
+export function NewPairsPanel({ onRefresh, refreshing, compact }: NewPairsPanelProps) {
   const [selectedChain, setSelectedChain] = useState<PanelChain>("solana");
   const networkId = selectedChain === "bnb" ? BSC_NETWORK_ID : SOLANA_NETWORK_ID;
   const { newPairs, isLoading } = useCodexNewPairs(networkId);
