@@ -243,7 +243,6 @@ export function NewPairsPanel({ onRefresh, refreshing, compact }: NewPairsPanelP
           <>
             {pairs.map((pair, idx) => {
               const changeColor = pair.change24h >= 0 ? "hsl(142, 71%, 45%)" : "hsl(0, 84%, 60%)";
-              const changeColor = pair.change24h >= 0 ? "hsl(142, 71%, 45%)" : "hsl(0, 84%, 60%)";
               return (
                 <button
                   key={pair.address || idx}
