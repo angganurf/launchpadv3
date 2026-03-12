@@ -4,7 +4,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useFastSwap } from "@/hooks/useFastSwap";
 import { useBnbSwap } from "@/hooks/useBnbSwap";
 import { useAuth } from "@/hooks/useAuth";
-import { useMultiWallet } from "@/hooks/useMultiWallet";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { getRpcUrl } from "@/hooks/useSolanaWallet";
