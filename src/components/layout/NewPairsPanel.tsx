@@ -113,23 +113,52 @@ export function NewPairsPanel({ onRefresh, refreshing, compact }: NewPairsPanelP
             LIVE
           </span>
         </div>
-        {onRefresh && (
-          <button onClick={onRefresh} style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "2px",
-            display: "flex",
-            color: "rgba(255,255,255,0.3)",
-          }}>
-            <RefreshCw style={{
-              width: "12px",
-              height: "12px",
-              transition: "transform 0.6s",
-              transform: refreshing ? "rotate(360deg)" : "none",
-            }} />
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          {/* Chain toggle */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setSelectedChain("solana"); setVisibleCount(PAGE_SIZE); }}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: "24px", height: "24px", borderRadius: "6px", border: "none", cursor: "pointer",
+              background: selectedChain === "solana" ? "rgba(200,255,0,0.15)" : "transparent",
+              boxShadow: selectedChain === "solana" ? "inset 0 0 0 1px rgba(200,255,0,0.3)" : "none",
+              transition: "all 0.15s",
+            }}
+            title="Solana pairs"
+          >
+            <img src={solanaLogo} alt="SOL" style={{ width: "16px", height: "16px", borderRadius: "50%" }} />
           </button>
-        )}
+          <button
+            onClick={(e) => { e.stopPropagation(); setSelectedChain("bnb"); setVisibleCount(PAGE_SIZE); }}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: "24px", height: "24px", borderRadius: "6px", border: "none", cursor: "pointer",
+              background: selectedChain === "bnb" ? "rgba(243,186,47,0.15)" : "transparent",
+              boxShadow: selectedChain === "bnb" ? "inset 0 0 0 1px rgba(243,186,47,0.3)" : "none",
+              transition: "all 0.15s",
+            }}
+            title="BNB pairs"
+          >
+            <BnbIcon size={16} />
+          </button>
+          {onRefresh && (
+            <button onClick={onRefresh} style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "2px",
+              display: "flex",
+              color: "rgba(255,255,255,0.3)",
+            }}>
+              <RefreshCw style={{
+                width: "12px",
+                height: "12px",
+                transition: "transform 0.6s",
+                transform: refreshing ? "rotate(360deg)" : "none",
+              }} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Table Header */}
