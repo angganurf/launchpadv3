@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { useCodexNewPairs, type CodexPairToken } from "@/hooks/useCodexNewPairs";
+import { useCodexNewPairs, type CodexPairToken, SOLANA_NETWORK_ID, BSC_NETWORK_ID } from "@/hooks/useCodexNewPairs";
 import { OptimizedTokenImage } from "@/components/ui/OptimizedTokenImage";
 import { RefreshCw, Rocket, ExternalLink, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import solanaLogo from "@/assets/solana-logo.png";
+
+type PanelChain = "solana" | "bnb";
 
 interface NewPairsPanelProps {
   onRefresh?: (e: React.MouseEvent) => void;
@@ -19,7 +22,6 @@ function formatMcap(n: number): string {
 function timeAgo(raw: string | number | null): string {
   if (!raw) return "—";
   try {
-    // Codex returns unix seconds — convert to ms
     const ms = typeof raw === "number"
       ? (raw < 1e12 ? raw * 1000 : raw)
       : (() => {
@@ -40,8 +42,24 @@ function timeAgo(raw: string | number | null): string {
 
 const PAGE_SIZE = 10;
 
+function BnbIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="#F3BA2F" />
+      <path d="M16 6L19.09 9.09L12.36 15.82L9.27 12.73L16 6Z" fill="white" />
+      <path d="M22.73 12.73L25.82 15.82L19.09 22.55L16 19.45L22.73 12.73Z" fill="white" />
+      <path d="M9.27 12.73L12.36 15.82L9.27 18.91L6.18 15.82L9.27 12.73Z" fill="white" />
+      <path d="M16 19.45L19.09 22.55L16 25.64L12.91 22.55L16 19.45Z" fill="white" />
+      <path d="M22.73 18.91L25.82 15.82L22.73 12.73L19.64 15.82L22.73 18.91Z" fill="white" />
+      <path d="M16 12.73L19.09 15.82L16 18.91L12.91 15.82L16 12.73Z" fill="white" />
+    </svg>
+  );
+}
+
 export function NewPairsPanel({ onRefresh, refreshing, compact }: NewPairsPanelProps) {
-  const { newPairs, isLoading } = useCodexNewPairs();
+  const [selectedChain, setSelectedChain] = useState<PanelChain>("solana");
+  const networkId = selectedChain === "bnb" ? BSC_NETWORK_ID : SOLANA_NETWORK_ID;
+  const { newPairs, isLoading } = useCodexNewPairs(networkId);
   const navigate = useNavigate();
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const pairs = newPairs.slice(0, visibleCount);
