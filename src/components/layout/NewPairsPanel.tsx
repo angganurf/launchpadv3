@@ -56,6 +56,40 @@ function BnbIcon({ size = 16 }: { size?: number }) {
   );
 }
 
+const IMG_STYLE: React.CSSProperties = {
+  width: "20px", height: "20px", borderRadius: "50%", objectFit: "cover", flexShrink: 0,
+};
+
+function TokenIcon({ pair, dexScreenerUrl }: { pair: CodexPairToken; dexScreenerUrl: string | null }) {
+  const [stage, setStage] = useState(0); // 0=primary, 1=dex, 2=text
+  const srcs = [pair.imageUrl, dexScreenerUrl].filter(Boolean) as string[];
+
+  if (stage >= srcs.length) {
+    return (
+      <div style={{
+        ...IMG_STYLE,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "rgba(255,255,255,0.08)", fontSize: "8px", fontWeight: 700,
+        color: "rgba(255,255,255,0.5)", fontFamily: "'IBM Plex Mono', monospace",
+      }}>
+        {pair.symbol?.slice(0, 2) || "?"}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={srcs[stage]}
+      alt={pair.symbol}
+      style={IMG_STYLE}
+      loading="eager"
+      decoding="sync"
+      onError={() => setStage((s) => s + 1)}
+    />
+  );
+}
+
+
 export function NewPairsPanel({ onRefresh, refreshing, compact }: NewPairsPanelProps) {
   const [selectedChain, setSelectedChain] = useState<PanelChain>("solana");
   const networkId = selectedChain === "bnb" ? BSC_NETWORK_ID : SOLANA_NETWORK_ID;
@@ -220,13 +254,7 @@ export function NewPairsPanel({ onRefresh, refreshing, compact }: NewPairsPanelP
                 >
                   {/* Token info */}
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
-                    <OptimizedTokenImage
-                      src={pair.imageUrl}
-                      fallbackSrc={dexScreenerUrl}
-                      fallbackText={pair.symbol}
-                      size={40}
-                      style={{ width: "20px", height: "20px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-                    />
+                    <TokenIcon pair={pair} dexScreenerUrl={dexScreenerUrl} />
                     <div style={{ minWidth: 0, overflow: "hidden" }}>
                       <div style={{
                         fontSize: "11px",
