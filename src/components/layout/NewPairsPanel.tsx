@@ -68,19 +68,17 @@ function toChecksumHex(addr: string): string {
 function TokenIcon({ pair, dexScreenerUrl, chain }: { pair: CodexPairToken; dexScreenerUrl: string | null; chain: PanelChain }) {
   const [stage, setStage] = useState(0);
 
+  // DexScreener is the most reliable single source for token images
+  const dexChain = chain === "bnb" ? "bsc" : "solana";
+  const dexUrl = pair.address
+    ? `https://dd.dexscreener.com/ds-data/tokens/${dexChain}/${pair.address}.png`
+    : null;
+
   const srcs: string[] = [];
-  // 1. Primary image from Codex
-  if (pair.imageUrl) srcs.push(pair.imageUrl);
-  // 2. DexScreener token image
-  if (dexScreenerUrl) srcs.push(dexScreenerUrl);
-  // 3. For BNB: Trust Wallet CDN
-  if (chain === "bnb" && pair.address) {
-    srcs.push(`https://assets-cdn.trustwallet.com/blockchains/smartchain/assets/${pair.address}/logo.png`);
-  }
-  // 4. For BNB: PancakeSwap token list image
-  if (chain === "bnb" && pair.address) {
-    srcs.push(`https://tokens.pancakeswap.finance/images/${pair.address}.png`);
-  }
+  // 1. DexScreener first — most reliable for new tokens
+  if (dexUrl) srcs.push(dexUrl);
+  // 2. Codex image as backup
+  if (pair.imageUrl && pair.imageUrl !== dexUrl) srcs.push(pair.imageUrl);
 
   if (stage >= srcs.length) {
     return (
