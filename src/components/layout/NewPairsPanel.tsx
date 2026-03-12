@@ -193,8 +193,9 @@ export function NewPairsPanel({ onRefresh, refreshing, compact }: NewPairsPanelP
           <>
             {pairs.map((pair, idx) => {
               const changeColor = pair.change24h >= 0 ? "hsl(142, 71%, 45%)" : "hsl(0, 84%, 60%)";
+              const dexChain = selectedChain === "bnb" ? "bsc" : "solana";
               const dexScreenerUrl = pair.address
-                ? `https://dd.dexscreener.com/ds-data/tokens/solana/${pair.address}.png`
+                ? `https://dd.dexscreener.com/ds-data/tokens/${dexChain}/${pair.address}.png`
                 : null;
               return (
                 <button
